@@ -21,6 +21,7 @@ Fresh schema for local / new installs — attendance, patrons, staff, and Larave
 | `000013` | `settings` |
 | `000014` | `students.normalized_name` |
 | `000015` | `programs` (course dropdowns for patrons) |
+| `000016` | `program_years`, `program_courses` (prospectus manager) |
 
 ## Retired migrations
 

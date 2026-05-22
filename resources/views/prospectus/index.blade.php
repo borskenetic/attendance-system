@@ -1,63 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8" />
+@section('title', 'Prospectus Manager')
+
+@push('styles')
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Prospectus Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{{ asset('public/css/prospectus/index.css') }}">
-</head>
-<body class="bg-gray-100 text-gray-800">
-    <!-- ✅ Header (same as attendance_logs) -->
-    <div class="flex items-center px-4 py-2 flex-wrap bg-white">
-        <img src="{{ asset('images/pantasLogo.png') }}" alt="New Logo" class="header-logo-img"
-            style="margin-left: 9rem; max-height: 50px; width: auto;" />
-        <h1 class="school-name mb-0 ml-2"></h1>
+    <link rel="stylesheet" href="{{ asset('css/prospectus/index.css') }}">
+    <style>
+        body { display: block !important; height: auto !important; }
+    </style>
+@endpush
 
-        <div class="flex gap-2 flex-wrap ml-auto mr-36">
-            <a href="{{ route('book.index') }}" class="btn0 btn-sm">Home</a>
-
-            <div class="attendance_dropdown">
-                <button class="attendance_dropdown-button">Attendance</button>
-                <div class="attendance_dropdown-content">
-                    <a href="{{ route('attendance.scan') }}">Attendance</a>
-                    <a href="{{ route('attendance_logs.index') }}">Attendance-logs</a>
-                </div>
-            </div>
-
-            <a href="{{ route('landing') }}" class="btn2 btn-sm">OPAC</a>
-            <a class="btn3 btn-sm">Prospectus Manager</a>
-
-            <div class="logs_dropdown">
-                <button class="logs_dropdown-button">Logs</button>
-                <div class="logs_dropdown-content">
-                    <a href="{{ route('logs.index') }}">Logs</a>
-                    <a href="{{ route('rfid.scanner') }}">RFID Scanner</a>
-                    <a href="{{ route('book.report.download') }}">Download Book Report</a>
-                    <a href="{{ route('students.report') }}">Student Report</a>
-                </div>
-            </div>
-
-            <a href="https://area51lmslibrary.com/user-account/" class="btn4 btn-sm" target="_blank" hidden>51 Learned</a>
-            <a href="{{ route('files.index') }}" class="btn4 btn-sm">Repository</a>
-
-            <form action="{{ route('logout') }}" method="POST" class="mb-0">
-                @csrf
-                <button type="submit" class="btn5">Logout</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="max-w-6xl mx-auto px-4 py-8">
+@section('content')
+    <div class="prospectus-page max-w-6xl mx-auto px-2 py-2 text-gray-800">
         <h1 class="text-2xl font-bold mb-6">Prospectus Manager</h1>
 
-        {{-- Flash messages --}}
         @if(session('success'))
         <div class="p-3 mb-4 bg-green-100 text-green-800 rounded">{{ session('success') }}</div>
         @endif
 
-        {{-- Add Program --}}
+        @if($errors->any())
+        <div class="p-3 mb-4 bg-red-100 text-red-800 rounded">
+            <ul class="mb-0 ps-3">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
         <div class="bg-white rounded shadow p-4 mb-6">
             <h2 class="font-semibold mb-3">Add Program/Strand</h2>
             <form method="POST" action="{{ route('prospectus.storeProgram') }}"
@@ -74,7 +45,6 @@
             </form>
         </div>
 
-        {{-- Programs List --}}
         @foreach($programs as $program)
         <div class="bg-white rounded shadow mb-6">
             <div class="flex justify-between items-center px-4 py-3 bg-gray-800 text-white rounded-t">
@@ -83,12 +53,12 @@
                 </span>
                 <div class="flex gap-2">
                     <button type="button"
-                        onclick="openProgramEditModal({{ $program->id }}, '{{ $program->program_code }}', '{{ $program->program_name }}')"
+                        onclick="openProgramEditModal({{ $program->id }}, @js($program->program_code), @js($program->program_name))"
                         class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">
                         Edit Program
                     </button>
                     <button type="button"
-                        onclick="openProgramDeleteModal({{ $program->id }}, '{{ $program->program_code }}')"
+                        onclick="openProgramDeleteModal({{ $program->id }}, @js($program->program_code))"
                         class="bg-red-600 text-white px-2 py-1 rounded text-sm">
                         Delete
                     </button>
@@ -98,7 +68,6 @@
                     </button>
                 </div>
             </div>
-
 
             <div id="program-{{ $program->id }}" class="p-4 hidden">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -111,26 +80,21 @@
                                 Toggle
                             </button>
                         </div>
-                        {{-- Courses --}}
                         <div id="year-{{ $year->id }}" class="p-3 hidden">
                             <ul class="space-y-2 mb-3 max-h-52 overflow-y-auto">
                                 @forelse($year->courses as $course)
                                 <li id="course-{{ $course->id }}"
                                     class="flex justify-between items-center border-b pb-1">
-                                    <span><strong>{{ $course->course_code }}</strong> — {{ $course->course_name
-                                        }}</span>
+                                    <span><strong>{{ $course->course_code }}</strong> — {{ $course->course_name }}</span>
                                     <div class="flex gap-2">
-                                        <!-- Edit Button -->
                                         <button type="button" class="bg-yellow-500 text-white px-2 py-1 rounded text-xs"
-                                            onclick="openEditModal({{ $course->id }}, '{{ $course->course_code }}', '{{ $course->course_name }}')">
+                                            onclick="openEditModal({{ $course->id }}, @js($course->course_code), @js($course->course_name))">
                                             Edit
                                         </button>
-                                        <!-- Delete Button (triggers modal) -->
                                         <button type="button" class="bg-red-600 text-white px-2 py-1 rounded text-xs"
-                                            onclick="openDeleteModal({{ $course->id }}, '{{ $course->course_code }}')">
+                                            onclick="openDeleteModal({{ $course->id }}, @js($course->course_code))">
                                             Delete
                                         </button>
-
                                     </div>
                                 </li>
                                 @empty
@@ -138,7 +102,6 @@
                                 @endforelse
                             </ul>
 
-                            {{-- Add Course --}}
                             <form method="POST" action="{{ route('prospectus.storeCourse', $year->id) }}"
                                 class="add-course-form grid grid-cols-1 md:grid-cols-3 gap-2"
                                 data-year="{{ $year->id }}">
@@ -153,7 +116,6 @@
                                         class="spinner hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                                 </button>
                             </form>
-
                         </div>
                     </div>
                     @endforeach
@@ -163,7 +125,6 @@
         @endforeach
     </div>
 
-    <!-- Delete Modal -->
     <div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg w-96">
             <h2 class="text-lg font-bold mb-4">Confirm Delete</h2>
@@ -184,7 +145,7 @@
             </form>
         </div>
     </div>
-    <!-- Edit Modal -->
+
     <div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg w-96">
             <h2 class="text-lg font-bold mb-4">Edit Course</h2>
@@ -213,7 +174,6 @@
         </div>
     </div>
 
-    <!-- Edit Program Modal -->
     <div id="editProgramModal"
         class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg w-96">
@@ -221,13 +181,10 @@
             <form id="editProgramForm" method="POST">
                 @csrf
                 @method('PUT')
-
                 <input type="text" name="program_code" id="editProgramCode" class="w-full border rounded px-3 py-2 mb-3"
                     placeholder="Program Code" required>
-
                 <input type="text" name="program_name" id="editProgramName" class="w-full border rounded px-3 py-2 mb-3"
                     placeholder="Program Name" required>
-
                 <div class="flex justify-end gap-2">
                     <button type="button" onclick="closeProgramEditModal()"
                         class="px-3 py-1 border rounded">Cancel</button>
@@ -241,7 +198,7 @@
             </form>
         </div>
     </div>
-    <!-- Delete Program Modal -->
+
     <div id="deleteProgramModal" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
         <div class="bg-white p-6 rounded-lg shadow-lg w-96">
             <h2 class="text-lg font-bold mb-4">Delete Program</h2>
@@ -259,9 +216,10 @@
             </form>
         </div>
     </div>
-    <!-- Toast Container -->
+
     <div id="toastContainer" class="fixed bottom-5 right-5 space-y-2 z-50"></div>
-    <!-- Scripts -->
-    <script src="{{ asset('public/js/prospectus.js') }}"></script>
-</body>
-</html>
+@endsection
+
+@push('scripts')
+    <script src="{{ asset('js/prospectus.js') }}"></script>
+@endpush

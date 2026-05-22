@@ -13,6 +13,7 @@ use App\Http\Controllers\PendingEmployeeController;
 use App\Http\Controllers\PendingStudentController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\ProspectusController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -114,6 +115,17 @@ Route::middleware(['auth', 'can:isAdmin'])->group(function () {
     Route::get('/files/view/{id}', [FileController::class, 'view'])->name('files.view');
     Route::get('/files/download/{id}', [FileController::class, 'download'])->name('files.download');
     Route::delete('/files/delete/{id}', [FileController::class, 'delete'])->name('files.delete');
+
+    Route::prefix('prospectus')->name('prospectus.')->group(function () {
+        Route::get('/', [ProspectusController::class, 'index'])->name('index');
+        Route::post('/store-program', [ProspectusController::class, 'storeProgram'])->name('storeProgram');
+        Route::get('/{program}/years', [ProspectusController::class, 'getProgramYears'])->name('getProgramYears');
+    });
+    Route::post('/prospectus/{year}/course', [ProspectusController::class, 'storeCourse'])->name('prospectus.storeCourse');
+    Route::put('/prospectus/course/{course}', [ProspectusController::class, 'updateCourse'])->name('prospectus.updateCourse');
+    Route::delete('/prospectus/course/{course}', [ProspectusController::class, 'destroyCourse'])->name('prospectus.destroyCourse');
+    Route::put('/prospectus/program/{program}', [ProspectusController::class, 'updateProgram'])->name('prospectus.updateProgram');
+    Route::delete('/prospectus/program/{program}', [ProspectusController::class, 'destroyProgram'])->name('prospectus.destroyProgram');
 
     Route::get('/view-users', [UserController::class, 'index'])->name('users.index');
     Route::get('/create-user', [UserController::class, 'create'])->name('users.create');
