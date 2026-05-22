@@ -107,8 +107,8 @@
         </table>
     </div>
 
-    <div class="mt-4">
-        {{ $logs->links() }}
+    <div class="d-flex justify-content-center mt-4">
+        {{ $logs->withQueryString()->links('pagination::bootstrap-5') }}
     </div>
 </div>
 @endsection
