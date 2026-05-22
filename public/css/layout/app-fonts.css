@@ -1,0 +1,23 @@
+/* Global typography — driven by branding.css */
+html,
+body,
+button,
+input,
+select,
+textarea,
+.pantas-header,
+.pantas-header .nav-dropdown-button,
+.pantas-header .nav-dropdown-content a,
+.pantas-header .btn0,
+.pantas-header .btn2,
+.pantas-header .btn5,
+main,
+.table,
+.form-control,
+.form-select,
+.btn,
+.card,
+h1, h2, h3, h4, h5, h6,
+p, a, label {
+    font-family: var(--brand-font-family, 'Inter', 'Segoe UI', sans-serif);
+}

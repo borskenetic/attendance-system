@@ -1,0 +1,100 @@
+@php
+    $linkActive = fn (array $patterns) => collect($patterns)->contains(fn ($p) => request()->routeIs($p)) ? 'active' : '';
+    $dropActive = fn (array $patterns) => collect($patterns)->contains(fn ($p) => request()->routeIs($p)) ? 'active' : '';
+@endphp
+
+<div class="pantas-header d-flex align-items-center px-4 py-2 flex-wrap">
+    <a href="{{ route('home') }}">
+        <img src="{{ asset('images/pantasLogo.png') }}" alt="{{ config('app.name') }}" class="header-logo-img">
+    </a>
+
+    <button id="customMenuToggle" class="d-md-none toggle-btn" type="button" aria-label="Open menu">&#9776;</button>
+
+    <div id="routeWrapper" class="ms-auto responsive-nav">
+        <button id="customMenuClose" class="d-md-none close-btn" type="button" aria-label="Close menu">&times;</button>
+
+        <a href="{{ route('home') }}" class="btn0 btn-sm {{ $linkActive(['home']) }}">Home</a>
+
+        @auth
+            @can('isAdminOrStaff')
+                <div class="nav-dropdown">
+                    <button type="button" class="nav-dropdown-button {{ $dropActive(['attendance.scan', 'attendance.process', 'attendance.section', 'attendance_logs.index', 'attendance.changeVideo', 'attendance.uploadVideo', 'attendance.feedback.settings*', 'attendance.section.settings*']) }}">
+                        Attendance
+                    </button>
+                    <div class="nav-dropdown-content">
+                        <a href="{{ route('attendance.scan') }}" target="_blank" rel="noopener" class="{{ $linkActive(['attendance.scan']) }}">Attendance</a>
+                        <a href="{{ route('attendance_logs.index') }}" class="{{ $linkActive(['attendance_logs.index']) }}">Attendance Logs</a>
+                        <a href="{{ route('attendance.changeVideo') }}" class="{{ $linkActive(['attendance.changeVideo', 'attendance.uploadVideo']) }}">Manage Video</a>
+                        <a href="{{ route('attendance.section.settings') }}" class="{{ $linkActive(['attendance.section.settings*']) }}">Section Picker</a>
+                        <a href="{{ route('attendance.feedback.settings') }}" class="{{ $linkActive(['attendance.feedback.settings*']) }}">Logout Feedback</a>
+                    </div>
+                </div>
+
+                <div class="nav-dropdown">
+                    <button type="button" class="nav-dropdown-button {{ $dropActive(['students.index', 'students.create', 'students.edit', 'students.report', 'employees.*', 'pending.index', 'pending.employees', 'students.pending']) }}">
+                        Data
+                    </button>
+                    <div class="nav-dropdown-content">
+                        <a href="{{ route('students.index') }}" class="{{ $linkActive(['students.index', 'students.create', 'students.edit', 'students.report']) }}">Students</a>
+                        <a href="{{ route('employees.index') }}" class="{{ $linkActive(['employees.index', 'employees.create', 'employees.edit']) }}">Employees</a>
+                    </div>
+                </div>
+
+                <div class="nav-dropdown">
+                    <button type="button" class="nav-dropdown-button {{ $dropActive(['feedback.*', 'sms.*']) }}">
+                        Communication
+                    </button>
+                    <div class="nav-dropdown-content">
+                        <a href="{{ route('feedback.index') }}" class="{{ $linkActive(['feedback.index']) }}">Feedback</a>
+                        <a href="{{ route('sms.page') }}" class="{{ $linkActive(['sms.page', 'sms.send']) }}">SMS blast</a>
+                        <a href="{{ route('sms.scanMessage') }}" class="{{ $linkActive(['sms.scanMessage', 'sms.scanMessage.update']) }}">Scanner message</a>
+                    </div>
+                </div>
+
+                @can('isAdmin')
+                    <div class="nav-dropdown">
+                        <button type="button" class="nav-dropdown-button {{ $dropActive(['users.*']) }}">
+                            Admin
+                        </button>
+                        <div class="nav-dropdown-content">
+                            <a href="{{ route('users.create') }}" class="{{ $linkActive(['users.create', 'users.store']) }}">Create Account</a>
+                            <a href="{{ route('users.index') }}" class="{{ $linkActive(['users.index', 'users.edit']) }}">View Accounts</a>
+                        </div>
+                    </div>
+                @endcan
+
+                <form action="{{ route('logout') }}" method="POST" class="d-inline mb-0">
+                    @csrf
+                    <button type="submit" class="btn5">Logout</button>
+                </form>
+            @endcan
+        @else
+            <a href="{{ route('patron.register') }}" class="btn2 btn-sm {{ $linkActive(['patron.register', 'pending.store', 'pendingEmployee.store']) }}">Register</a>
+            <a href="{{ route('login') }}" class="btn5 btn-sm" style="text-decoration:none;display:inline-block;">Login</a>
+        @endauth
+    </div>
+</div>
+
+<script>
+(function () {
+    const toggleBtn = document.getElementById('customMenuToggle');
+    const closeBtn = document.getElementById('customMenuClose');
+    const routeWrapper = document.getElementById('routeWrapper');
+    if (!toggleBtn || !routeWrapper) return;
+
+    toggleBtn.addEventListener('click', () => routeWrapper.classList.add('open'));
+    closeBtn?.addEventListener('click', () => routeWrapper.classList.remove('open'));
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) routeWrapper.classList.remove('open');
+    });
+
+    if (window.innerWidth < 769) {
+        document.querySelectorAll('.pantas-header .nav-dropdown-button').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                btn.closest('.nav-dropdown')?.classList.toggle('open');
+            });
+        });
+    }
+})();
+</script>

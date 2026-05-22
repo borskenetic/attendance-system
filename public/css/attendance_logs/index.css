@@ -1,0 +1,472 @@
+
+        .school-name{
+            color: white;
+            margin-left: 5px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            
+        }
+        
+        .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .dropdown-button {
+    padding: 8px 12px;
+    background-color: #22333b;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+     margin-top: 8px;
+     font-size: 0.8rem;
+     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+    z-index: 1;
+  }
+
+  .dropdown-content a {
+    color: black;
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+  }
+
+  .dropdown-content a:hover {
+    background-color: #ffb845;
+  }
+
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+  
+  
+  
+ .attendance_dropdown {
+    position: relative;
+    border: none;
+}
+
+.attendance_dropdown-button {
+    margin-top: 8px;
+    background: none;          /* Removed background */
+    border: none;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    cursor: pointer;
+   font-weight: 600;
+    color: #ffb845;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.attendance_dropdown-button:focus {
+    outline: none;             /* Optional: removes outline when clicked */
+}
+
+.attendance_dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+    z-index: 1;
+    border-radius: 4px;
+}
+
+.attendance_dropdown-content a {
+    color: black;
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+     font-weight: bold;
+   font-size: 0.8rem;
+    color: #22333b;
+}
+
+.attendance_dropdown-content a:hover {
+    background-color: #ffb845;
+}
+
+.attendance_dropdown:hover .attendance_dropdown-content {
+    display: block;
+}
+
+  
+  .logs_dropdown {
+    position: relative;
+    border: none;
+}
+
+.logs_dropdown-button {
+    margin-top: 8px;
+    background: none;          /* Removed background */
+    border: none;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    cursor: pointer;
+   font-weight: 600;
+    color: #22333b;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.logs_dropdown-button:focus {
+    outline: none;             /* Optional: removes outline when clicked */
+}
+
+.logs_dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+    z-index: 1;
+    border-radius: 4px;
+}
+
+.logs_dropdown-content a {
+    color: black;
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+     font-weight: bold;
+   font-size: 0.8rem;
+    color: #22333b;
+}
+
+.logs_dropdown-content a:hover {
+    background-color: #ffb845;
+}
+
+.logs_dropdown:hover .logs_dropdown-content {
+    display: block;
+}
+
+        .school-name{
+            color: red;
+            margin-left: 5px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            
+        }
+        .btn0{
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 50px;
+            padding: 5px 15px;
+            margin-top: 10px;
+            transition: color 0.3s, transform 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-decoration: none;
+            color: #1F7A1F;
+        }
+        .btn0:hover{
+            color: #ffb845;
+        }
+        
+        .btn1{
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 50px;
+            padding: 5px 15px;
+            margin-top: 10px;
+            transition: color 0.3s, transform 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-decoration: none;
+            color: #ffb845;
+        }
+        
+        .btn2{
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 50px;
+            padding: 5px 15px;
+            margin-top: 10px;
+            transition: color 0.3s, transform 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-decoration: none;
+            color: #1F7A1F;
+        }
+        .btn2:hover{
+            color: #ffb845;
+        }
+        .btn3{
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 50px;
+            padding: 5px 15px;
+            margin-top: 10px;
+            transition: color 0.3s, transform 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-decoration: none;
+            color: #22333b;
+        }
+        .btn3:hover{
+            color: #ffb845;
+        }
+        .btn4{
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 50px;
+            padding: 5px 15px;
+            margin-top: 10px;
+            transition: color 0.3s, transform 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-decoration: none;
+            color: #1F7A1F;
+        }
+        .btn4:hover{
+            color: #ffb845;
+        }
+        
+        .btn5{
+            margin-right: 5rem;
+            background-color: #1F7A1F;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 0px;
+            padding: 5px 15px;
+            margin-top: 10px;
+            transition: color 0.3s, transform 0.3s;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-decoration: none;
+            color: white;
+            border:none;
+        }
+        .btn5:hover{
+            background-color: #ffb845;
+            color: #22333b;
+        }
+        
+        footer{
+            background-color: #05014a;
+            width: 100%;
+            height: 4rem;
+            padding: 1rem;
+
+        }
+        .a51-footer{
+            text-align: center;
+        }
+       
+        .a51-footer h1{
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+        }
+        .com-name{
+            color: #ffc107;
+            font-weight: bold;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+
+
+        }
+        .qoute{
+            font-size: 1rem;
+            font-style: italic;
+            color: #ccc;
+        }
+        
+        .text-white.px-4.py-2.hover\:bg-yellow-400.transition.w-full {
+    background-color: #932c27;
+}
+
+.in {
+    background-color: green;
+    color: white;
+    padding: 4px 10px;
+    font-weight: bold;
+    border-radius: 4px;
+    display: inline-block;
+    font-size: 0.875rem;
+}
+
+.out {
+    background-color: #932c27;
+    color: white;
+    padding: 4px 10px;
+    font-weight: bold;
+    border-radius: 4px;
+    display: inline-block;
+    font-size: 0.875rem;
+}
+
+        /*end of header*/
+        
+        .attendance-logs-page,
+        .attendance-logs-page * {
+    border-radius: 0 !important;
+}
+
+.attendance-logs-page {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 1rem 0 2rem;
+}
+
+.al-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.al-filters {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+}
+
+.al-filters form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.al-field {
+    flex: 1 1 180px;
+    min-width: 160px;
+}
+
+.al-field label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.25rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.al-field input,
+.al-field select {
+    width: 100%;
+    border: 1px solid #ccc;
+    padding: 0.5rem 0.75rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 0.875rem;
+}
+
+.al-status-btns {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.al-btn-in {
+    padding: 0.5rem 1rem;
+    background: #16a34a;
+    color: #fff;
+    border: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.al-btn-out {
+    padding: 0.5rem 1rem;
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.al-table-wrap {
+    overflow-x: auto;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.al-table {
+    width: 100%;
+    font-size: 0.875rem;
+    border-collapse: collapse;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.al-table thead {
+    background-color: #1f7a1f;
+    color: #fff;
+}
+
+.al-table th,
+.al-table td {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.al-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.al-empty {
+    text-align: center;
+    padding: 1.5rem;
+    color: #6b7280;
+}
+
+.al-reports-filters form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.al-reports-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.al-reports-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.btn-search{
+    background-color: #1F7A1F;
+    color: white;
+    transition: color 0.3s, transform 0.3s;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 13px;
+    padding: 10px;
+    align-items: center;
+}
+.btn-search:hover{
+    background-color: #ffb845;
+    color: #22333b;
+}
+
+/* Make Export buttons transparent and inherit text */
+a.export-btn {
+   
+    color: black !important;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    border: 1px solid #ccc;
+    transition: background-color 0.3s ease;
+}
+a.export-btn:hover {
+    background-color: #ffb845;
+    color: #932c27;
+}
+
+/* Remove background from form container */
+.no-bg {
+    background: none !important;
+    box-shadow: none !important;
+}
+ 

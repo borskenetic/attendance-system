@@ -1,0 +1,118 @@
+.employee-form-page {
+    max-width: 920px;
+    margin: 0 auto;
+}
+
+.employee-form-page .form-section {
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.employee-form-page .form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.employee-form-page .form-section-title {
+    font-family: var(--brand-font-family, 'Inter', sans-serif);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--brand-card-header-bg, #22333b);
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+}
+
+.employee-form-page .form-label {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #374151;
+    margin-bottom: 0.35rem;
+}
+
+.employee-form-page .form-control,
+.employee-form-page .form-select {
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.employee-form-page .form-control:focus,
+.employee-form-page .form-select:focus {
+    border-color: var(--brand-button-bg, #1f7a1f);
+    box-shadow: 0 0 0 0.15rem rgba(31, 122, 31, 0.2);
+}
+
+.employee-form-page .signature-wrap {
+    background: #fafafa;
+    border: 1px dashed #ccc;
+    border-radius: 8px;
+    padding: 0.75rem;
+}
+
+.employee-form-page .signature-wrap canvas {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: 150px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    touch-action: none;
+}
+
+.employee-form-page .photo-hint {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.35rem;
+}
+
+.employee-form-page .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.employee-form-page .btn-form-back {
+    background: #fff;
+    color: var(--brand-button-bg, #1f7a1f);
+    border: 1px solid var(--brand-button-bg, #1f7a1f);
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.employee-form-page .btn-form-back:hover {
+    background: #f0fdf0;
+    color: var(--brand-nav-link-hover, #145214);
+}
+
+.employee-form-page .btn-form-submit {
+    background-color: var(--brand-button-bg, #1f7a1f);
+    color: var(--brand-button-text, #fff);
+    border: none;
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+}
+
+.employee-form-page .btn-form-submit:hover {
+    background-color: var(--brand-button-hover-bg, #ffb845);
+    color: var(--brand-button-hover-text, #22333b);
+}
+
+.employee-form-page .page-intro {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-bottom: 0;
+}

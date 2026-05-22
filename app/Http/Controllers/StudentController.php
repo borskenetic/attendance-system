@@ -1,0 +1,602 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use App\Models\Student;
+use App\Models\PendingStudent;
+use App\Models\Program;
+use App\Models\StudentEditRequest;
+use App\Console\Commands\NormalizeStudentNames;
+use App\Exports\StudentsImportTemplateExport;
+use App\Exports\StudentsListExport;
+use App\Imports\StudentsImport;
+use App\Services\BulkIdCardService;
+use Illuminate\Support\Facades\Schema;
+use Maatwebsite\Excel\Facades\Excel;
+
+
+class StudentController extends Controller
+{
+    private function programList()
+    {
+        if (! Schema::hasTable('programs')) {
+            return collect();
+        }
+
+        return Program::orderBy('program_name')->get();
+    }
+
+    // Show all students
+    public function index(Request $request)
+    {
+        $programs = $this->programList();
+        $students = $this->filteredStudentsQuery($request)
+            ->orderBy('lastname', 'asc')
+            ->paginate(15)
+            ->appends($request->all());
+
+        return view('students.students', compact('students', 'programs'));
+    }
+
+    private function filteredStudentsQuery(Request $request)
+    {
+        $query = Student::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('lastname', 'like', "%{$search}%")
+                    ->orWhere('firstname', 'like', "%{$search}%")
+                    ->orWhere('course', 'like', "%{$search}%")
+                    ->orWhere('qrcode', 'like', "%{$search}%")
+                    ->orWhere('student_id', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('course')) {
+            $query->where('course', $request->course);
+        }
+
+        if ($request->filled('year')) {
+            $query->where('year', $request->year);
+        }
+
+        if ($request->filled('program_id')) {
+            $query->where('course', $request->program_id);
+        }
+
+        return $query;
+    }
+
+    public function downloadImportTemplate()
+    {
+        return Excel::download(
+            new StudentsImportTemplateExport,
+            'students_import_template.xlsx'
+        );
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,xlsx,xls|max:10240',
+        ]);
+
+        Excel::import(new StudentsImport, $request->file('file'));
+
+        return back()->with('success', 'Students imported successfully.');
+    }
+
+    public function bulkDownloadIds(Request $request, BulkIdCardService $bulkIds)
+    {
+        $students = $this->filteredStudentsQuery($request)->orderBy('lastname')->get();
+
+        if ($students->isEmpty()) {
+            return back()->with('error', 'No students match the current filters.');
+        }
+
+        if ($students->count() > BulkIdCardService::MAX_BULK_IDS) {
+            return back()->with(
+                'error',
+                'Too many students ('.$students->count().'). Narrow filters to '.BulkIdCardService::MAX_BULK_IDS.' or fewer.'
+            );
+        }
+
+        set_time_limit(max(120, $students->count() * 3));
+
+        return $bulkIds->downloadStudentsZip($students);
+    }
+
+    public function export(Request $request)
+    {
+        $paginated = $this->filteredStudentsQuery($request)
+            ->orderBy('lastname', 'asc')
+            ->paginate(15)
+            ->appends($request->query());
+
+        $rows = collect($paginated->items());
+
+        if ($rows->isEmpty()) {
+            return back()->with('error', 'No students on this page to export.');
+        }
+
+        $filename = 'students_page_'.$paginated->currentPage().'_'.now()->format('Y-m-d').'.xlsx';
+
+        return Excel::download(new StudentsListExport($rows), $filename);
+    }
+
+    // Show form to create new student
+    public function create()
+    {
+        $programs = $this->programList();
+        return view('students.create', compact('programs'));
+    }
+
+    // Store new student
+    public function store(Request $request)
+    {
+        // Validation
+        $validated = $request->validate([
+            'student_id' => 'required|string|max:255',
+            'firstname' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'middle_initial' => 'nullable|string|max:255',
+            'birth_date' => 'nullable|date',
+            'course' => 'required|string|max:255',
+            'year' => 'required|string|max:255',
+            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:4096',
+            'student_signature' => 'nullable|string', // base64
+            'mobile_number' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'emergency_person' => 'nullable|string|max:255',
+            'emergency_relationship' => 'nullable|string|max:255',
+            'emergency_number' => 'nullable|string|max:20',
+            'emergency_address' => 'nullable|string',
+        ]);
+
+        // Handle profile picture upload
+        if ($request->hasFile('profile_picture')) {
+            $file = $request->file('profile_picture');
+            $filename = time() . '_profile_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $file->move(base_path('images/profile_pictures'), $filename);
+            $validated['profile_picture'] = 'images/profile_pictures/' . $filename;
+        }
+
+        // Handle signature (base64)
+        if (!empty($validated['student_signature']) && str_starts_with($validated['student_signature'], 'data:')) {
+
+            [$meta, $contents] = explode(',', $validated['student_signature'], 2);
+
+            $ext = 'png';
+            if (preg_match('/data:image\/(jpeg|jpg)/i', $meta)) {
+                $ext = 'jpg';
+            }
+
+            $sigName = time() . '_sig.' . $ext;
+
+            if (!file_exists(base_path('images/student_signatures'))) {
+                mkdir(base_path('images/student_signatures'), 0755, true);
+            }
+
+            file_put_contents(
+                base_path('images/student_signatures/' . $sigName),
+                base64_decode($contents)
+            );
+
+            $validated['student_signature'] = 'images/student_signatures/' . $sigName;
+        }
+
+        // Generate QR code (auto like S-00000001)
+        $last = Student::orderBy('id', 'desc')->first();
+        $nextNumber = 1;
+
+        if ($last && !empty($last->qrcode) && str_starts_with($last->qrcode, 'S-')) {
+            $lastNum = intval(Str::after($last->qrcode, 'S-'));
+            $nextNumber = $lastNum + 1;
+        }
+
+        $validated['qrcode'] = 'S-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
+        $validated['normalized_name'] = NormalizeStudentNames::normalizeFullName(
+            $validated['firstname'].' '.$validated['lastname']
+        );
+
+        Student::create($validated);
+
+        return redirect()->route('students.index')->with('success', 'Student Registered Successfully!');
+    }
+
+    // Edit form
+    public function edit($id)
+    {
+        $student = Student::findOrFail($id);
+        $programs = $this->programList();
+
+        return view('students.edit', compact('student', 'programs'));
+    }
+
+    // Update student
+    public function update(Request $request, $id)
+    {
+        $student = Student::findOrFail($id);
+    
+        $validated = $request->validate([
+            'student_id' => 'required|string|unique:students,student_id,' . $id,
+            'lastname' => 'required|string|max:255',
+            'firstname' => 'required|string|max:255',
+            'middle_initial' => 'nullable|string|max:255',
+            'birth_date' => 'nullable|date',
+            'course' => 'nullable|string',
+            'year' => 'nullable|string',
+    
+            'mobile_number' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'emergency_person' => 'nullable|string|max:255',
+            'emergency_relationship' => 'nullable|string|max:255',
+            'emergency_number' => 'nullable|string|max:20',
+            'emergency_address' => 'nullable|string',
+    
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'student_signature' => 'nullable|string',
+        ]);
+    
+        /*
+        |--------------------------------------------------------------------------
+        | PROFILE PICTURE
+        |--------------------------------------------------------------------------
+        */
+        if ($request->hasFile('profile_picture')) {
+    
+            if ($student->profile_picture && file_exists(base_path($student->profile_picture))) {
+                unlink(base_path($student->profile_picture));
+            }
+    
+            $image = $request->file('profile_picture');
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $image->getClientOriginalName());
+            $image->move(base_path('images/profile_pictures'), $filename);
+    
+            $validated['profile_picture'] = 'images/profile_pictures/' . $filename;
+        }
+    
+        /*
+        |--------------------------------------------------------------------------
+        | SIGNATURE (ONLY IF NEW ONE DRAWN)
+        |--------------------------------------------------------------------------
+        */
+        if (!empty($validated['student_signature']) && str_starts_with($validated['student_signature'], 'data:')) {
+    
+            [$meta, $contents] = explode(',', $validated['student_signature'], 2);
+    
+            $ext = 'png';
+            if (preg_match('/data:image\/(jpeg|jpg)/i', $meta)) {
+                $ext = 'jpg';
+            }
+    
+            if (!file_exists(base_path('images/student_signatures'))) {
+                mkdir(base_path('images/student_signatures'), 0755, true);
+            }
+    
+            $sigName = time() . '_sig.' . $ext;
+    
+            file_put_contents(
+                base_path('images/student_signatures/' . $sigName),
+                base64_decode($contents)
+            );
+    
+            $validated['student_signature'] = 'images/student_signatures/' . $sigName;
+        } else {
+            // Prevent overwriting existing signature with null
+            unset($validated['student_signature']);
+        }
+    
+        /*
+        |--------------------------------------------------------------------------
+        | DO NOT TOUCH QR CODE
+        |--------------------------------------------------------------------------
+        */
+        unset($validated['qrcode']);
+
+        $validated['normalized_name'] = NormalizeStudentNames::normalizeFullName(
+            $validated['firstname'].' '.$validated['lastname']
+        );
+
+        $student->update($validated);
+    
+        return redirect()
+            ->route('students.index')
+            ->with('success', 'Student updated successfully!');
+    }
+
+
+    // Delete student
+    public function destroy($id)
+    {
+        $student = Student::findOrFail($id);
+
+        if ($student->profile_picture) {
+            Storage::disk('public')->delete($student->profile_picture);
+        }
+
+        $student->delete();
+
+        return redirect()->route('students.index')->with('success', 'Student Deleted Successfully!');
+    }
+
+    public function show($id)
+    {
+        $student = Student::findOrFail($id);
+        return view('students.show', compact('student'));
+    }
+
+    // Pending list
+    public function pending()
+    {
+        $pendingStudents = PendingStudent::orderBy('lastname')->get();
+        return view('students.pending', compact('pendingStudents'));
+    }
+
+    // Approve pending student → move to students table
+    public function approve($id)
+    {
+        try {
+            // Start a database transaction
+            DB::transaction(function () use ($id) {
+    
+                $pending = PendingStudent::findOrFail($id);
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Generate QR Code Safely (S-00000001 format)
+                |--------------------------------------------------------------------------
+                */
+                // Lock the students table to prevent duplicate QR numbers
+                $last = Student::lockForUpdate()->orderBy('id', 'desc')->first();
+                $nextNumber = 1;
+    
+                if ($last && str_starts_with($last->qrcode, 'S-')) {
+                    $lastNum = intval(substr($last->qrcode, 2));
+                    $nextNumber = $lastNum + 1;
+                }
+    
+                $qrcode = 'S-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Prevent duplicate student_id
+                |--------------------------------------------------------------------------
+                */
+                if (Student::where('student_id', $pending->student_id)->exists()) {
+                    throw new \Exception('ID Number already exists in students table.');
+                }
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Create Student
+                |--------------------------------------------------------------------------
+                */
+                Student::create([
+                    'student_id' => $pending->student_id,
+                    'lastname' => $pending->lastname,
+                    'firstname' => $pending->firstname,
+                    'middle_initial' => $pending->middle_initial ?? '',
+                    'birthday' => $pending->birthday,
+                    'course' => $pending->course,
+                    'year' => $pending->year,
+    
+                    'mobile_number' => $pending->mobile_number,
+                    'address' => $pending->address,
+                    'emergency_person' => $pending->emergency_person,
+                    'emergency_relationship' => $pending->emergency_relationship,
+                    'emergency_number' => $pending->emergency_number,
+                    'emergency_address' => $pending->emergency_address,
+    
+                    'profile_picture' => $pending->profile_picture,
+                    'student_signature' => $pending->student_signature,
+                    'qrcode' => $qrcode,
+                ]);
+    
+                /*
+                |--------------------------------------------------------------------------
+                | Delete Pending Record
+                |--------------------------------------------------------------------------
+                */
+                $pending->delete();
+            });
+    
+            return back()->with('success', 'Student approved and added to the students table.');
+    
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    // Reject pending student
+    public function reject($id)
+    {
+        $pending = PendingStudent::findOrFail($id);
+        $pending->delete();
+
+        return back()->with('success', 'Registration rejected.');
+    }
+
+
+    public function profile($qrcode)
+    {
+        $student = Student::where('qrcode', $qrcode)->firstOrFail();
+        session(['student_id' => $student->id]);
+
+        $program = Schema::hasTable('programs')
+            ? Program::where('program_code', $student->course)->first()
+            : null;
+        $programs = $this->programList();
+
+        return view('students.profile', compact(
+            'student',
+            'program',
+            'programs',
+        ));
+    }
+
+    public function submitEditRequest(Request $request)
+    {
+        $student = Student::findOrFail($request->student_id);
+
+        // Prevent multiple pending
+        if ($student->editRequests()->where('status', 'pending')->exists()) {
+            return back()->with('error', 'You already have a pending request.');
+        }
+
+        $request->validate([
+            'lastname' => 'required|string|max:255',
+            'firstname' => 'required|string|max:255',
+            'middle_initial' => 'nullable|string|max:255',
+            'birthday' => 'nullable|date',
+            'program_id' => 'nullable|exists:programs,id',
+            'year' => 'nullable|string|max:10',
+
+            'mobile_number' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+
+            'emergency_person' => 'nullable|string|max:255',
+            'emergency_relationship' => 'nullable|string|max:255',
+            'emergency_number' => 'nullable|string|max:20',
+            'emergency_address' => 'nullable|string',
+
+            'profile_picture' => 'nullable|image|max:2048'
+        ]);
+
+        $photoPath = null;
+
+        if ($request->hasFile('profile_picture')) {
+        
+            $image = $request->file('profile_picture');
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $image->getClientOriginalName());
+        
+            $image->move(base_path('images/edits'), $filename);
+        
+            $photoPath = 'images/edits/' . $filename;
+        }
+
+
+        StudentEditRequest::create([
+            'student_id' => $student->id,
+            'lastname' => $request->lastname,
+            'firstname' => $request->firstname,
+            'middle_initial' => $request->middle_initial,
+            'birthday' => $request->birthday,
+            'program_id' => $request->program_id,
+            'year' => $request->year,
+            'mobile_number' => $request->mobile_number,
+            'address' => $request->address,
+            'emergency_person' => $request->emergency_person,
+            'emergency_relationship' => $request->emergency_relationship,
+            'emergency_number' => $request->emergency_number,
+            'emergency_address' => $request->emergency_address,
+            'profile_picture' => $photoPath,
+        ]);
+
+        return back()->with('success', 'Edit request submitted for approval.');
+    }
+
+    public function approveRequest($id)
+    {
+        $req = StudentEditRequest::findOrFail($id);
+        $student = $req->student;
+    
+        // Handle profile picture transfer
+        $newProfilePath = $student->profile_picture;
+    
+        if ($req->profile_picture) {
+    
+            // Delete old profile picture if exists
+            if ($student->profile_picture && file_exists(base_path($student->profile_picture))) {
+                unlink(base_path($student->profile_picture));
+            }
+    
+            $newProfilePath = $req->profile_picture;
+        }
+    
+        // If program_id maps to program_code
+        $programCode = $student->course;
+        if ($req->program_id) {
+            $program = Program::find($req->program_id);
+            $programCode = $program ? $program->program_code : $student->course;
+        }
+    
+        $student->update([
+            'lastname' => $req->lastname,
+            'firstname' => $req->firstname,
+            'middle_initial' => $req->middle_initial,
+            'birthday' => $req->birthday,
+            'course' => $programCode,
+            'year' => $req->year,
+            'mobile_number' => $req->mobile_number,
+            'address' => $req->address,
+            'emergency_person' => $req->emergency_person,
+            'emergency_relationship' => $req->emergency_relationship,
+            'emergency_number' => $req->emergency_number,
+            'emergency_address' => $req->emergency_address,
+            'profile_picture' => $newProfilePath,
+        ]);
+    
+        $req->status = 'approved';
+        $req->reviewed_at = now();
+        $req->reviewed_by = auth()->id();
+        $req->save();
+    
+        return back()->with('success', 'Request approved and changes applied.');
+    }
+
+
+
+    public function rejectRequest($id)
+    {
+        $req = StudentEditRequest::findOrFail($id);
+
+        $req->status = 'rejected';
+        $req->reviewed_at = now();
+        $req->reviewed_by = auth()->id();
+        $req->save();
+
+        return back()->with('success', 'Request rejected.');
+    }
+
+
+
+    public function pendingRequests(Request $request)
+    {
+        $search = $request->search;
+
+        // Pending only
+        $pending = StudentEditRequest::with('student')
+            ->where('status', 'pending')
+            ->when($search, function ($query) use ($search) {
+                $query->whereHas('student', function ($q) use ($search) {
+                    $q->where('lastname', 'like', "%$search%")
+                        ->orWhere('firstname', 'like', "%$search%");
+                });
+            })
+            ->latest()
+            ->paginate(10, ['*'], 'pending_page');
+
+        // Logs (approved + rejected)
+        $logs = StudentEditRequest::with('student')
+            ->whereIn('status', ['approved', 'rejected'])
+            ->when($search, function ($query) use ($search) {
+                $query->whereHas('student', function ($q) use ($search) {
+                    $q->where('lastname', 'like', "%$search%")
+                        ->orWhere('firstname', 'like', "%$search%");
+                });
+            })
+            ->latest()
+            ->paginate(10, ['*'], 'logs_page');
+
+        return view('students.pending_requests', compact('pending', 'logs', 'search'));
+    }
+
+
+}

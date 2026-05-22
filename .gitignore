@@ -1,0 +1,72 @@
+/.phpunit.cache
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/storage/logs/*.log
+/vendor
+
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/auth.json
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+.cursor/
+
+# Root-level upload dump (not used by Laravel — assets live under public/)
+/images/
+
+# Accidental absolute-path folders from Windows
+/Users/
+LibraryMonitoring/
+
+# Local composer binaries (use global composer install)
+/bin/
+/composer
+/composer2
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Laravel bootstrap cache (regenerated)
+/bootstrap/cache/*.php
+!/bootstrap/cache/.gitignore
+
+# User uploads & generated media (keep folder structure via .gitkeep)
+/public/images/profile_pictures/*
+!/public/images/profile_pictures/.gitkeep
+/public/images/formal_pictures/*
+!/public/images/formal_pictures/.gitkeep
+/public/images/signatures/*
+!/public/images/signatures/.gitkeep
+/public/images/student_signatures/*
+!/public/images/student_signatures/.gitkeep
+/public/images/edits/*
+!/public/images/edits/.gitkeep
+/storage/app/temp_*.zip
+/storage/app/bulk_*.zip
+/storage/app/front_*.png
+/storage/app/back_*.png
+/storage/app/employee_*.zip
+
+# Large local-only assets (add your own after clone)
+/public/videos/*.mp4
+/videos/*.mp4
+/images/id_templates/
+
+# Do not commit migration archives
+/database/migrations/*.zip

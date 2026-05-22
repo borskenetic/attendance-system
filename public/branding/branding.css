@@ -1,0 +1,48 @@
+/*
+ * CMU attendance — edit these variables to rebrand (colors + font).
+ * Same idea as demo-eidt/public/branding/branding.css
+ */
+:root {
+    /* Typography — Inter matches FAQ / marketing headings */
+    --brand-font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+    /* Page */
+    --brand-page-bg: #f5f7fa;
+
+    /* Navigation */
+    --brand-nav-link: #1f7a1f;
+    --brand-nav-link-hover: #145214;
+    --brand-nav-dropdown-hover-bg: #e8f5e9;
+    --brand-nav-dropdown-hover-text: #145214;
+
+    /* Logout / primary chrome buttons */
+    --brand-logout-bg: #1f7a1f;
+    --brand-logout-text: #ffffff;
+    --brand-logout-hover-bg: #ffb845;
+    --brand-logout-hover-text: #22333b;
+
+    /* Data page card title bar (Registered Students / Employees) */
+    --brand-card-header-bg: #22333b;
+    --brand-card-header-text: #ffffff;
+
+    /* Tables */
+    --brand-table-header-bg: #1f7a1f;
+    --brand-table-header-text: #ffffff;
+
+    /* Primary actions (filter, add, submit) */
+    --brand-button-bg: #1f7a1f;
+    --brand-button-text: #ffffff;
+    --brand-button-hover-bg: #ffb845;
+    --brand-button-hover-text: #22333b;
+
+    /* Secondary / warning */
+    --brand-warning-bg: #ffb845;
+    --brand-warning-text: #22333b;
+
+    /* Footer */
+    --brand-footer-bg: #1c2b2d;
+
+    /* Bootstrap hooks */
+    --bs-primary: var(--brand-button-bg);
+    --bs-primary-rgb: 31, 122, 31;
+}

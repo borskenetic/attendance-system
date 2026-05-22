@@ -1,0 +1,300 @@
+/* Students / Employees / Pending — uses branding.css tokens */
+.data-page .card-header {
+    background-color: var(--brand-card-header-bg, #22333b) !important;
+    color: var(--brand-card-header-text, #fff) !important;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.data-page .card-header h4,
+.data-page .card-header h5 {
+    font-family: var(--brand-font-family, 'Inter', sans-serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--brand-card-header-text, #fff) !important;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.data-page .card-header .page-intro {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+.data-page .btn-add,
+.data-page .btn-search-filter,
+.data-page .btn-primary.btn-search-filter {
+    background-color: var(--brand-button-bg, #1f7a1f);
+    border-color: var(--brand-button-bg, #1f7a1f);
+    color: var(--brand-button-text, #fff);
+    font-weight: 600;
+    font-family: var(--brand-font-family, 'Inter', sans-serif);
+}
+
+.data-page .btn-add:hover,
+.data-page .btn-search-filter:hover {
+    background-color: var(--brand-button-hover-bg, #ffb845);
+    border-color: var(--brand-button-hover-bg, #ffb845);
+    color: var(--brand-button-hover-text, #22333b);
+}
+
+.data-page .data-tabs .btn-outline-primary {
+    color: var(--brand-button-bg, #1f7a1f);
+    border-color: var(--brand-button-bg, #1f7a1f);
+    font-weight: 600;
+    font-family: var(--brand-font-family, 'Inter', sans-serif);
+}
+
+.data-page .data-tabs .btn-outline-primary:hover,
+.data-page .data-tabs .btn-outline-primary.active {
+    background-color: var(--brand-button-bg, #1f7a1f);
+    border-color: var(--brand-button-bg, #1f7a1f);
+    color: var(--brand-button-text, #fff);
+}
+
+.data-page .patron-panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.data-page .patron-panel {
+    background: #fff;
+    border: 1px solid rgba(34, 51, 59, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(34, 51, 59, 0.06);
+}
+
+.data-page .patron-panel > summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.data-page .patron-panel > summary::-webkit-details-marker {
+    display: none;
+}
+
+.data-page .patron-panel > summary::after {
+    content: '';
+    width: 0.45rem;
+    height: 0.45rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+    margin-top: -0.15rem;
+    opacity: 0.65;
+}
+
+.data-page .patron-panel:not([open]) > summary::after {
+    transform: rotate(-45deg);
+    margin-top: 0.1rem;
+}
+
+.data-page .patron-panel:not([open]) .patron-panel-body {
+    display: none;
+}
+
+.data-page .patron-panel-import {
+    border-top: 3px solid var(--brand-button-bg, #1f7a1f);
+}
+
+.data-page .patron-panel-export {
+    border-top: 3px solid var(--brand-warning-bg, #ffb845);
+}
+
+.data-page .patron-panel-main {
+    border-top: 3px solid var(--brand-card-header-bg, #22333b);
+}
+
+.data-page .patron-panel-heading {
+    font-family: var(--brand-font-family, 'Inter', sans-serif);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brand-card-header-bg, #22333b);
+    padding: 0.5rem 0.85rem;
+    background: rgba(34, 51, 59, 0.04);
+    border-bottom: 1px solid rgba(34, 51, 59, 0.08);
+}
+
+.data-page .patron-panel-body {
+    padding: 0.75rem 0.85rem 0.85rem;
+}
+
+.data-page .patron-panel-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.data-page .patron-import-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.data-page .patron-import-row > .btn-primary {
+    align-self: stretch;
+    display: inline-flex;
+    align-items: center;
+}
+
+@media (max-width: 575.98px) {
+    .data-page .patron-panels {
+        grid-template-columns: 1fr;
+    }
+}
+
+.data-page .patron-import-form {
+    margin: 0;
+}
+
+.data-page .patron-import-file {
+    position: relative;
+    margin: 0;
+    cursor: pointer;
+}
+
+.data-page .patron-import-file input[type="file"] {
+    position: absolute;
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.data-page .patron-import-file:has(input:focus-visible) .btn,
+.data-page .patron-import-file:hover .btn {
+    border-color: var(--brand-button-bg, #1f7a1f);
+    color: var(--brand-button-bg, #1f7a1f);
+}
+
+.data-page .patron-panel .btn-sm {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.data-page .patron-panel-export .btn-outline-primary {
+    color: var(--brand-button-bg, #1f7a1f);
+    border-color: var(--brand-button-bg, #1f7a1f);
+}
+
+.data-page .patron-panel-export .btn-outline-primary:hover {
+    background-color: var(--brand-button-bg, #1f7a1f);
+    color: var(--brand-button-text, #fff);
+}
+
+.data-page .btn-warning {
+    background-color: var(--brand-warning-bg, #ffb845);
+    border-color: var(--brand-warning-bg, #ffb845);
+    color: var(--brand-warning-text, #22333b);
+    font-weight: 600;
+}
+
+.data-page .patron-list-table thead,
+.data-page .table thead {
+    background-color: var(--brand-table-header-bg, #1f7a1f) !important;
+}
+
+.data-page .patron-list-table thead th,
+.data-page .table thead th {
+    font-weight: 600;
+    font-family: var(--brand-font-family, 'Inter', sans-serif);
+    font-size: 0.875rem;
+    color: var(--brand-table-header-text, #fff) !important;
+    background-color: var(--brand-table-header-bg, #1f7a1f) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    padding: 0.65rem 0.5rem;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.data-pending-toggle .btn-primary {
+    background-color: var(--brand-button-bg, #1f7a1f);
+    border-color: var(--brand-button-bg, #1f7a1f);
+}
+
+.data-pending-toggle .btn-outline-primary {
+    color: var(--brand-button-bg, #1f7a1f);
+    border-color: var(--brand-button-bg, #1f7a1f);
+}
+
+.data-pending-toggle .btn-outline-primary.active,
+.data-pending-toggle .btn-primary.active {
+    background-color: var(--brand-button-bg, #1f7a1f);
+    color: var(--brand-button-text, #fff);
+}
+
+/* User accounts */
+.accounts-page .accounts-list-table thead,
+.accounts-page .table thead {
+    background-color: var(--brand-table-header-bg, #1f7a1f) !important;
+}
+
+.accounts-page .accounts-list-table thead th,
+.accounts-page .table thead th {
+    font-family: var(--brand-font-family, 'Inter', sans-serif);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--brand-table-header-text, #fff) !important;
+    background-color: var(--brand-table-header-bg, #1f7a1f) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    padding: 0.65rem 0.5rem;
+    vertical-align: middle;
+}
+
+.accounts-page .table tbody tr:hover {
+    background-color: rgba(31, 122, 31, 0.06);
+}
+
+.accounts-page .role-badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35em 0.65em;
+}
+
+.accounts-page .role-badge-admin {
+    background-color: #22333b;
+    color: #fff;
+}
+
+.accounts-page .role-badge-staff {
+    background-color: #1f7a1f;
+    color: #fff;
+}
+
+.accounts-page .role-badge-faculty {
+    background-color: #ffb845;
+    color: #22333b;
+}
+
+.accounts-page .role-badge-student {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.accounts-page .btn-brand {
+    background-color: var(--brand-button-bg, #1f7a1f);
+    border-color: var(--brand-button-bg, #1f7a1f);
+    color: var(--brand-button-text, #fff);
+}
+
+.accounts-page .btn-brand:hover {
+    background-color: var(--brand-button-hover-bg, #ffb845);
+    border-color: var(--brand-button-hover-bg, #ffb845);
+    color: var(--brand-button-hover-text, #22333b);
+}
