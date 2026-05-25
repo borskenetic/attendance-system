@@ -22,7 +22,6 @@ Fresh schema for local / new installs — attendance, patrons, staff, and Larave
 | `000014` | `students.normalized_name` |
 | `000015` | `programs` (course dropdowns for patrons) |
 | `000016` | `program_years`, `program_courses` (prospectus manager) |
-| `000017` | Missing `students` / `pending_students` columns (e.g. `middle_initial`) for older DBs |
 
 ## Retired migrations
 
@@ -42,6 +41,18 @@ php artisan serve
 ```
 
 Use `migrate:fresh` only on a **new** or **throwaway** database — it drops all tables.
+
+## Legacy Hostinger database (old `students` schema)
+
+If approval fails with “Unknown column …”, either run `migrate:fresh` on a throwaway DB or add missing columns in phpMyAdmin. Common patch:
+
+```sql
+ALTER TABLE students ADD COLUMN middle_initial VARCHAR(255) NULL AFTER firstname;
+ALTER TABLE students ADD COLUMN birth_date DATE NULL;
+ALTER TABLE pending_students ADD COLUMN middle_initial VARCHAR(255) NULL AFTER lastname;
+```
+
+The app also skips columns that do not exist when approving (see `App\Support\TableColumns`).
 
 ## Notes
 

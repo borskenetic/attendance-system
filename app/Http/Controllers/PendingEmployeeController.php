@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\TableColumns;
 use Illuminate\Http\Request;
 use App\Models\PendingEmployee;
 use Illuminate\Support\Facades\DB;
@@ -86,8 +87,7 @@ class PendingEmployeeController extends Controller
         }
         $validated['qrcode'] = 'E-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
     
-        // Save
-        PendingEmployee::create($validated);
+        PendingEmployee::create(TableColumns::filter('pending_employees', $validated));
     
         return redirect()->back()->with('success', 'Employee registration submitted! Await admin approval.');
     }
@@ -114,31 +114,32 @@ class PendingEmployeeController extends Controller
             // Role ID for Faculty (you said role_id = 2)
             $rid = 2;
     
-            // Insert into real employees table
-            Employee::create([
-                'employee_id'   => $pending->employee_id, // unique ID from pending table
-                'formal_picture'=> $pending->formal_picture,
-                'department'    => $pending->department,
-                'firstname'     => $pending->firstname,
-                'lastname'      => $pending->lastname,
-                'position'      => $pending->position,
+            $payload = TableColumns::filter('employees', [
+                'employee_id' => $pending->employee_id,
+                'formal_picture' => $pending->formal_picture,
+                'department' => $pending->department,
+                'firstname' => $pending->firstname,
+                'lastname' => $pending->lastname,
+                'position' => $pending->position,
                 'employee_number' => $pending->employee_number ?? null,
-                'birth_date'    => $pending->birth_date ?? null,
-                'sex'           => $pending->sex ?? null,
+                'birth_date' => $pending->birth_date ?? null,
+                'sex' => $pending->sex ?? null,
                 'tin_id_number' => $pending->tin_id_number ?? null,
                 'philhealth_number' => $pending->philhealth_number ?? null,
-                'civil_status'  => $pending->civil_status ?? null,
-                'blood_type'    => $pending->blood_type ?? null,
-                'sss_number'    => $pending->sss_number ?? null,
-                'hdmf_number'   => $pending->hdmf_number ?? null,
-                'qrcode'        => $newQr,
+                'civil_status' => $pending->civil_status ?? null,
+                'blood_type' => $pending->blood_type ?? null,
+                'sss_number' => $pending->sss_number ?? null,
+                'hdmf_number' => $pending->hdmf_number ?? null,
+                'qrcode' => $newQr,
                 'emergency_contact_name' => $pending->emergency_contact_name ?? null,
                 'emergency_contact_relationship' => $pending->emergency_contact_relationship ?? null,
-                'address'       => $pending->address ?? null,
+                'address' => $pending->address ?? null,
                 'emergency_contact_number' => $pending->emergency_contact_number ?? null,
                 'employee_signature' => $pending->employee_signature ?? null,
-                'role_id'       => $rid,
+                'role_id' => $rid,
             ]);
+
+            Employee::create($payload);
             // Delete pending record after approval
             $pending->delete();
     

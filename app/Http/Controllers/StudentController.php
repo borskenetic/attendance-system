@@ -16,6 +16,7 @@ use App\Exports\StudentsImportTemplateExport;
 use App\Exports\StudentsListExport;
 use App\Imports\StudentsImport;
 use App\Services\BulkIdCardService;
+use App\Support\TableColumns;
 use Illuminate\Support\Facades\Schema;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -339,76 +340,82 @@ class StudentController extends Controller
         return view('students.pending', compact('pendingStudents'));
     }
 
+    /**
+     * Build student row for approval; only includes columns that exist (legacy DB safe).
+     */
+    private function buildStudentFromPending(PendingStudent $pending, string $qrcode): array
+    {
+        $data = [
+            'student_id' => $pending->student_id,
+            'id_number' => $pending->id_number,
+            'lastname' => $pending->lastname,
+            'firstname' => $pending->firstname,
+            'middle_initial' => $pending->middle_initial,
+            'blood_type' => $pending->blood_type,
+            'course' => $pending->course,
+            'year' => $pending->year,
+            'mobile_number' => $pending->mobile_number,
+            'emergency_person' => $pending->emergency_person,
+            'emergency_relationship' => $pending->emergency_relationship,
+            'emergency_number' => $pending->emergency_number,
+            'emergency_address' => $pending->emergency_address,
+            'address' => $pending->address,
+            'profile_picture' => $pending->profile_picture,
+            'student_signature' => $pending->student_signature,
+            'qrcode' => $qrcode,
+        ];
+
+        if (Schema::hasColumn('students', 'birth_date')) {
+            $data['birth_date'] = $pending->birth_date;
+        } elseif (Schema::hasColumn('students', 'birthday')) {
+            $data['birthday'] = $pending->birth_date;
+        }
+
+        if (Schema::hasColumn('students', 'normalized_name')) {
+            $data['normalized_name'] = NormalizeStudentNames::normalizeFullName(
+                trim($pending->firstname.' '.$pending->lastname)
+            );
+        }
+
+        return TableColumns::filter('students', $data);
+    }
+
     // Approve pending student → move to students table
     public function approve($id)
     {
         try {
-            // Start a database transaction
             DB::transaction(function () use ($id) {
-    
                 $pending = PendingStudent::findOrFail($id);
-    
-                /*
-                |--------------------------------------------------------------------------
-                | Generate QR Code Safely (S-00000001 format)
-                |--------------------------------------------------------------------------
-                */
-                // Lock the students table to prevent duplicate QR numbers
+
                 $last = Student::lockForUpdate()->orderBy('id', 'desc')->first();
                 $nextNumber = 1;
-    
-                if ($last && str_starts_with($last->qrcode, 'S-')) {
-                    $lastNum = intval(substr($last->qrcode, 2));
-                    $nextNumber = $lastNum + 1;
+
+                if ($last && $last->qrcode && str_starts_with((string) $last->qrcode, 'S-')) {
+                    $nextNumber = intval(substr($last->qrcode, 2)) + 1;
                 }
-    
-                $qrcode = 'S-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
-    
-                /*
-                |--------------------------------------------------------------------------
-                | Prevent duplicate student_id
-                |--------------------------------------------------------------------------
-                */
-                if (Student::where('student_id', $pending->student_id)->exists()) {
-                    throw new \Exception('ID Number already exists in students table.');
+
+                $qrcode = 'S-' . str_pad((string) $nextNumber, 8, '0', STR_PAD_LEFT);
+
+                $studentId = trim((string) ($pending->student_id ?? ''));
+                if ($studentId !== '' && Student::where('student_id', $studentId)->exists()) {
+                    throw new \Exception('Student ID already exists in the students table.');
                 }
-    
-                /*
-                |--------------------------------------------------------------------------
-                | Create Student
-                |--------------------------------------------------------------------------
-                */
-                Student::create([
-                    'student_id' => $pending->student_id,
-                    'id_number' => $pending->id_number,
-                    'lastname' => $pending->lastname,
-                    'firstname' => $pending->firstname,
-                    'middle_initial' => $pending->middle_initial,
-                    'birth_date' => $pending->birth_date,
-                    'blood_type' => $pending->blood_type,
-                    'course' => $pending->course,
-                    'year' => $pending->year,
-                    'mobile_number' => $pending->mobile_number,
-                    'emergency_person' => $pending->emergency_person,
-                    'emergency_relationship' => $pending->emergency_relationship,
-                    'emergency_number' => $pending->emergency_number,
-                    'emergency_address' => $pending->emergency_address,
-                    'address' => $pending->address,
-                    'profile_picture' => $pending->profile_picture,
-                    'student_signature' => $pending->student_signature,
-                    'qrcode' => $qrcode,
-                ]);
-    
-                /*
-                |--------------------------------------------------------------------------
-                | Delete Pending Record
-                |--------------------------------------------------------------------------
-                */
+
+                $payload = $this->buildStudentFromPending($pending, $qrcode);
+
+                if ($payload === []) {
+                    throw new \Exception('Students table is missing required columns. Run migrations or add missing fields.');
+                }
+
+                if (! isset($payload['qrcode'])) {
+                    throw new \Exception('Students table is missing the qrcode column.');
+                }
+
+                Student::create($payload);
                 $pending->delete();
             });
-    
+
             return back()->with('success', 'Student approved and added to the students table.');
-    
         } catch (\Throwable $e) {
             return back()->with('error', 'Error: ' . $e->getMessage());
         }

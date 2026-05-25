@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\PendingStudent;
 use App\Models\PendingEmployee;
 use App\Models\Role;
+use App\Support\TableColumns;
 use Illuminate\Support\Str;
 
 class PendingStudentController extends Controller
@@ -94,8 +95,7 @@ class PendingStudentController extends Controller
             $validated['student_signature'] = 'images/student_signatures/' . $sigName;
         }
 
-        // Save
-        PendingStudent::create($validated);
+        PendingStudent::create(TableColumns::filter('pending_students', $validated));
 
         return redirect()->back()->with('success', 'Student registration submitted! Await admin approval.');
     }
