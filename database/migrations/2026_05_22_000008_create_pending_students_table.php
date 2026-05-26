@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('pending_students', function (Blueprint $table) {
             $table->id();
-            $table->string('id_number')->nullable();
+            $table->string('student_id')->nullable();
             $table->string('firstname');
             $table->string('lastname');
             $table->string('middle_initial')->nullable();

@@ -80,8 +80,8 @@ class IdCardController extends Controller
         });
 
         // ID number
-        if ($student->id_number) {
-            $this->drawText($img, $student->id_number, 1000, 610, 65, '#000');
+        if ($student->student_id) {
+            $this->drawText($img, $student->student_id, 1000, 610, 65, '#000');
         }
         
         if ($student->qrcode) {

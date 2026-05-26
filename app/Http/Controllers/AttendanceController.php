@@ -186,7 +186,7 @@ class AttendanceController extends Controller
         $parsed = $this->parseQr($raw);
 
         if (! $student && $parsed['student_no']) {
-            $student = Student::where('id_number', $parsed['student_no'])->first();
+            $student = Student::where('student_id', $parsed['student_no'])->first();
         }
 
         if (! $student && $parsed['full_name']) {

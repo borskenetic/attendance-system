@@ -12,7 +12,7 @@ class StudentSeeder extends Seeder
     {
         $students = [
             [
-                'id_number' => '2024-00001',
+                'student_id' => '2024-00001',
                 'firstname' => 'Juan',
                 'lastname' => 'Dela Cruz',
                 'middle_initial' => 'M',
@@ -23,7 +23,7 @@ class StudentSeeder extends Seeder
                 'qrcode' => 'S-00000001',
             ],
             [
-                'id_number' => '2024-00002',
+                'student_id' => '2024-00002',
                 'firstname' => 'Maria',
                 'lastname' => 'Santos',
                 'middle_initial' => 'L',
@@ -34,7 +34,7 @@ class StudentSeeder extends Seeder
                 'qrcode' => 'S-00000002',
             ],
             [
-                'id_number' => '2024-00003',
+                'student_id' => '2024-00003',
                 'firstname' => 'Jose',
                 'lastname' => 'Reyes',
                 'middle_initial' => null,
@@ -45,7 +45,7 @@ class StudentSeeder extends Seeder
                 'qrcode' => 'S-00000003',
             ],
             [
-                'id_number' => '2024-00004',
+                'student_id' => '2024-00004',
                 'firstname' => 'Ana',
                 'lastname' => 'Garcia',
                 'middle_initial' => 'P',
@@ -56,7 +56,7 @@ class StudentSeeder extends Seeder
                 'qrcode' => 'S-00000004',
             ],
             [
-                'id_number' => '2024-00005',
+                'student_id' => '2024-00005',
                 'firstname' => 'Mark',
                 'lastname' => 'Lopez',
                 'middle_initial' => 'D',
@@ -74,7 +74,7 @@ class StudentSeeder extends Seeder
             $row['role_id'] = null;
 
             Student::updateOrCreate(
-                ['id_number' => $row['id_number']],
+                ['student_id' => $row['student_id']],
                 $row
             );
         }

@@ -57,7 +57,7 @@ class PendingStudentController extends Controller
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'middle_initial' => 'nullable|string|max:255',
-            'id_number' => 'nullable|string|max:255',
+            'student_id' => 'nullable|string|max:255',
             'mobile_number' => 'nullable|string|max:255',
             'course' => 'required|string|max:255',
             'year' => 'nullable|string|max:255',

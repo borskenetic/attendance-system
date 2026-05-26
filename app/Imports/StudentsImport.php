@@ -14,7 +14,7 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithVal
     public function rules(): array
     {
         return [
-            '*.id_number' => 'required|distinct|unique:students,id_number',
+            '*.student_id' => 'required|distinct|unique:students,student_id',
             '*.firstname' => 'required|string|max:255',
             '*.lastname' => 'required|string|max:255',
             '*.qrcode' => 'nullable|distinct|unique:students,qrcode',
@@ -23,11 +23,11 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithVal
 
     public function model(array $row)
     {
-        $idNumber = trim((string) ($row['id_number'] ?? $row['student_id'] ?? ''));
+        $studentId = trim((string) ($row['student_id'] ?? $row['id_number'] ?? ''));
         $firstname = trim((string) ($row['firstname'] ?? ''));
         $lastname = trim((string) ($row['lastname'] ?? ''));
 
-        if ($idNumber === '' || $firstname === '' || $lastname === '') {
+        if ($studentId === '' || $firstname === '' || $lastname === '') {
             return null;
         }
 
@@ -37,7 +37,7 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithVal
         }
 
         return new Student([
-            'id_number' => $idNumber,
+            'student_id' => $studentId,
             'firstname' => $firstname,
             'lastname' => $lastname,
             'middle_initial' => trim((string) ($row['middle_initial'] ?? '')) ?: null,

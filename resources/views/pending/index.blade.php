@@ -66,7 +66,7 @@
                                             No Image
                                         @endif
                                     </td>
-                                    <td>{{ $p->id_number ?? '—' }}</td>
+                                    <td>{{ $p->student_id ?? '—' }}</td>
                                     <td>{{ $p->firstname }} {{ $p->lastname }}</td>
                                     <td>{{ $p->course }}</td>
                                     <td>{{ $p->year }}</td>

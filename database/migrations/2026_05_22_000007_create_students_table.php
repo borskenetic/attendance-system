@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('role_id')->nullable()->constrained()->nullOnDelete();
 
             // School ID (e.g. 2024-00001). Not the same as qrcode (S-00000001 scan code).
-            $table->string('id_number')->nullable()->unique();
+            $table->string('student_id')->nullable()->unique();
 
             $table->string('firstname');
             $table->string('lastname');

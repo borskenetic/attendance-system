@@ -55,7 +55,7 @@ class StudentController extends Controller
                     ->orWhere('firstname', 'like', "%{$search}%")
                     ->orWhere('course', 'like', "%{$search}%")
                     ->orWhere('qrcode', 'like', "%{$search}%")
-                    ->orWhere('id_number', 'like', "%{$search}%");
+                    ->orWhere('student_id', 'like', "%{$search}%");
             });
         }
 
@@ -143,7 +143,7 @@ class StudentController extends Controller
     {
         // Validation
         $validated = $request->validate([
-            'id_number' => 'required|string|max:255|unique:students,id_number',
+            'student_id' => 'required|string|max:255|unique:students,student_id',
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'middle_initial' => 'nullable|string|max:255',
@@ -226,7 +226,7 @@ class StudentController extends Controller
         $student = Student::findOrFail($id);
     
         $validated = $request->validate([
-            'id_number' => 'required|string|max:255|unique:students,id_number,' . $id,
+            'student_id' => 'required|string|max:255|unique:students,student_id,' . $id,
             'lastname' => 'required|string|max:255',
             'firstname' => 'required|string|max:255',
             'middle_initial' => 'nullable|string|max:255',
@@ -346,7 +346,7 @@ class StudentController extends Controller
     private function buildStudentFromPending(PendingStudent $pending, string $qrcode): array
     {
         $data = [
-            'id_number' => $pending->id_number,
+            'student_id' => $pending->student_id,
             'lastname' => $pending->lastname,
             'firstname' => $pending->firstname,
             'middle_initial' => $pending->middle_initial,
@@ -395,9 +395,9 @@ class StudentController extends Controller
 
                 $qrcode = 'S-' . str_pad((string) $nextNumber, 8, '0', STR_PAD_LEFT);
 
-                $idNumber = trim((string) ($pending->id_number ?? ''));
-                if ($idNumber !== '' && Student::where('id_number', $idNumber)->exists()) {
-                    throw new \Exception('Student ID number already exists in the students table.');
+                $schoolId = trim((string) ($pending->student_id ?? ''));
+                if ($schoolId !== '' && Student::where('student_id', $schoolId)->exists()) {
+                    throw new \Exception('Student ID already exists in the students table.');
                 }
 
                 $payload = $this->buildStudentFromPending($pending, $qrcode);

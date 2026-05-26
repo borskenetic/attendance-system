@@ -66,7 +66,7 @@
                         <input type="text" name="lastname" class="form-control" placeholder="Last Name" required>
                     </div>
                     <div class="col-md-6">
-                        <input type="text" name="id_number" class="form-control" placeholder="Student ID" value="{{ old('id_number') }}">
+                        <input type="text" name="student_id" class="form-control" placeholder="Student ID" value="{{ old('student_id') }}">
                         <small class="text-danger" hidden>
                             Please leave it blank if you dont know your Student ID. Dont input N/A
                         </small>

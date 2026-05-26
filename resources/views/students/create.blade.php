@@ -62,10 +62,10 @@
                                    value="{{ old('middle_initial') }}" maxlength="5" placeholder="Optional">
                         </div>
                         <div class="col-md-6">
-                            <label for="id_number" class="form-label">Student ID <span class="text-danger">*</span></label>
-                            <input type="text" name="id_number" id="id_number" class="form-control @error('id_number') is-invalid @enderror"
-                                   value="{{ old('id_number') }}" placeholder="School ID number" required>
-                            @error('id_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <label for="student_id" class="form-label">Student ID <span class="text-danger">*</span></label>
+                            <input type="text" name="student_id" id="student_id" class="form-control @error('student_id') is-invalid @enderror"
+                                   value="{{ old('student_id') }}" placeholder="School ID number" required>
+                            @error('student_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
                             <label for="mobile_number" class="form-label">Mobile number</label>
