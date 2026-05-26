@@ -2,29 +2,35 @@
 
 ## Active migrations (`2026_05_22_*`)
 
-Fresh schema for local / new installs — attendance, patrons, staff, and Laravel system tables.
+Fresh schema for new databases — **15 migrations**, no follow-up patches required.
 
-| File | Tables |
-|------|--------|
+| File | Tables / purpose |
+|------|------------------|
 | `000001` | `users` |
 | `000002` | `password_reset_tokens` |
 | `000003` | `sessions` |
 | `000004` | `cache`, `cache_locks` |
 | `000005` | `jobs`, `job_batches`, `failed_jobs` |
 | `000006` | `roles` |
-| `000007` | `students` |
-| `000008` | `pending_students` |
+| `000007` | `students` (full patron row: `id_number`, `qrcode`, `normalized_name`, emergency fields, etc.) |
+| `000008` | `pending_students` (same patron fields as `students`, minus `qrcode` / system columns) |
 | `000009` | `employees` |
 | `000010` | `pending_employees` |
-| `000011` | `attendance_logs` (includes `section`, `IN`/`OUT`) |
+| `000011` | `attendance_logs` (`student_id` FK → `students.id`, `section`, `IN`/`OUT`) |
 | `000012` | `attendance_feedback` |
 | `000013` | `settings` |
-| `000014` | `students.normalized_name` |
-| `000015` | `programs` (course dropdowns for patrons) |
-| `000016` | `program_years`, `program_courses` (prospectus manager) |
-| `000018` | Drops `student_id`, uses `id_number` as school ID; aligns `pending_students` |
+| `000015` | `programs` |
+| `000016` | `program_years`, `program_courses` |
 
-**Student IDs:** `id_number` = school ID (e.g. `2024-00001`). `qrcode` = scan code (`S-00000001`). `attendance_logs.student_id` is the internal row FK to `students.id`.
+### Student identifiers
+
+| Column | Meaning |
+|--------|---------|
+| `id_number` | School ID shown on forms / ID card (e.g. `2024-00001`) |
+| `qrcode` | Scanner code (`S-00000001`), generated on register or approval |
+| `attendance_logs.student_id` | Internal FK to `students.id` — not the school ID |
+
+There is **no** `student_id` text column on `students` or `pending_students`.
 
 ## Retired migrations
 
@@ -33,9 +39,6 @@ Older `2025_*` / `2026_02_*` files are in `_retired/`. Do not run them on a new 
 ## Local setup
 
 ```bash
-# Create database (MySQL)
-# CREATE DATABASE cmu_local;
-
 cp .env.example .env
 php artisan key:generate
 php artisan migrate:fresh --seed
@@ -48,5 +51,5 @@ Use `migrate:fresh` only on a **new** or **throwaway** database — it drops all
 ## Notes
 
 - `attendance_logs.status` uses `IN` / `OUT` (matches `AttendanceController`).
-- Library tables (books, ebooks, rooms, etc.) are **not** in this set; add later if needed.
+- Library tables (books, ebooks, rooms, etc.) are **not** in this set.
 - `Setting` model expects the `settings` table (`scan_sms`, etc.).

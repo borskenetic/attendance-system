@@ -5,8 +5,6 @@ namespace App\Exports;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Carbon\Carbon;
-
 class AttendanceLogsExport implements FromCollection, WithHeadings
 {
     protected $logs;
@@ -26,9 +24,7 @@ class AttendanceLogsExport implements FromCollection, WithHeadings
                 'course'      => $log->student->course ?? 'Unknown',
                 'section'     => $log->section ?? '—',
                 'status'      => strtoupper($log->status),
-                'scanned_at'  => $log->scanned_at
-                    ? Carbon::parse($log->scanned_at)->timezone('Asia/Manila')->format('Y-m-d h:i A')
-                    : '—',
+                'scanned_at'  => $log->scanned_at?->format('Y-m-d h:i A') ?? '—',
             ];
         });
     }

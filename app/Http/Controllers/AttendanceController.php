@@ -148,14 +148,14 @@ class AttendanceController extends Controller
             'student_id' => $student->id,
             'section' => $section,
             'status' => $newStatus,
-            'scanned_at' => Carbon::now('Asia/Manila'),
+            'scanned_at' => now(),
         ]);
 
         $this->sendScanSms($student, $newStatus);
 
         return response()->json([
             'status' => $newStatus,
-            'scanned_at' => $log->scanned_at->timezone('Asia/Manila')->format('Y-m-d h:i:s A'),
+            'scanned_at' => $log->scanned_at->format('Y-m-d h:i:s A'),
             'logout_feedback_enabled' => Setting::logoutFeedbackEnabled(),
         ]);
     }

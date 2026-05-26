@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Patron fields mirror students (except qrcode — assigned on approval).
+     * Patron fields match students (000007) except system fields:
+     * no user_id, role_id, qrcode, or normalized_name (qrcode assigned on approval).
      */
     public function up(): void
     {

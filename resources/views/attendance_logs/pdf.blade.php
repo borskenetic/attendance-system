@@ -32,12 +32,7 @@
                     <td>{{ $log->section ?? '—' }}</td>
                     <td>{{ strtoupper($log->status) }}</td>
                     <td>
-                        {{ $log->scanned_at
-                            ? \Carbon\Carbon::parse($log->scanned_at, 'UTC')
-                                ->timezone('Asia/Manila')
-                                ->format('Y-m-d h:i A')
-                            : '—'
-                        }}
+                        {{ $log->scanned_at?->format('Y-m-d h:i A') ?? '—' }}
                     </td>
                 </tr>
             @endforeach

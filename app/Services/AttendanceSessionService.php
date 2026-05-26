@@ -34,14 +34,14 @@ class AttendanceSessionService
             return false;
         }
 
-        $inDayStart = Carbon::parse($last->scanned_at)->timezone(self::TZ)->startOfDay();
-        $todayStart = Carbon::now(self::TZ)->startOfDay();
+        $inDayStart = $last->scanned_at->copy()->startOfDay();
+        $todayStart = Carbon::today();
 
         if ($inDayStart->greaterThanOrEqualTo($todayStart)) {
             return false;
         }
 
-        $outAt = Carbon::parse($last->scanned_at)->timezone(self::TZ)->endOfDay();
+        $outAt = $last->scanned_at->copy()->endOfDay();
 
         AttendanceLog::create([
             'student_id' => $student->id,

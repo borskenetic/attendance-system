@@ -12,13 +12,19 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('role_id')->nullable()->constrained()->nullOnDelete();
+
+            // School ID (e.g. 2024-00001). Not the same as qrcode (S-00000001 scan code).
             $table->string('id_number')->nullable()->unique();
+
             $table->string('firstname');
             $table->string('lastname');
+            $table->string('normalized_name', 255)->nullable()->index();
             $table->string('middle_initial')->nullable();
             $table->date('birth_date')->nullable();
             $table->string('blood_type', 10)->nullable();
+
             $table->string('qrcode')->unique();
+
             $table->string('course')->nullable();
             $table->string('year')->nullable();
             $table->string('mobile_number')->nullable();
