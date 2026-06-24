@@ -3,25 +3,38 @@
     $dropActive = fn (array $patterns) => collect($patterns)->contains(fn ($p) => request()->routeIs($p)) ? 'active' : '';
 @endphp
 
-<div class="pantas-header d-flex align-items-center px-4 py-2 flex-wrap">
-    <a href="{{ route('home') }}">
-        <img src="{{ asset('images/pantasLogo.png') }}" alt="{{ config('app.name') }}" class="header-logo-img">
-    </a>
+<button id="customMenuToggle" class="sidebar-trigger" type="button" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
 
-    <button id="customMenuToggle" class="d-md-none toggle-btn" type="button" aria-label="Open menu">&#9776;</button>
+<button id="sidebarCollapseToggle" class="sidebar-collapse-toggle" type="button" aria-label="Collapse sidebar" aria-expanded="true">
+    <span></span>
+    <span></span>
+</button>
 
-    <div id="routeWrapper" class="ms-auto responsive-nav">
-        <button id="customMenuClose" class="d-md-none close-btn" type="button" aria-label="Close menu">&times;</button>
+<div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 
+<aside class="pantas-header">
+    <div class="sidebar-header">
+        <a href="{{ route('home') }}" class="sidebar-brand">
+            <img src="{{ asset('images/pantasLogo.png') }}" alt="{{ config('app.name') }}" class="header-logo-img">
+        </a>
+
+        <button id="customMenuClose" class="close-btn" type="button" aria-label="Close menu">&times;</button>
+    </div>
+
+    <nav id="routeWrapper" class="responsive-nav" aria-label="Main navigation">
         <a href="{{ route('home') }}" class="btn0 btn-sm {{ $linkActive(['home']) }}">Home</a>
 
         @auth
             @can('isAdminOrStaff')
-                <div class="nav-dropdown">
-                    <button type="button" class="nav-dropdown-button {{ $dropActive(['attendance.scan', 'attendance.process', 'attendance.section', 'attendance_logs.index', 'attendance.changeVideo', 'attendance.uploadVideo', 'attendance.feedback.settings*', 'attendance.section.settings*']) }}">
+                <div class="nav-dropdown" data-sidebar-section="attendance">
+                    <button type="button" class="nav-dropdown-button {{ $dropActive(['attendance.scan', 'attendance.process', 'attendance.section', 'attendance_logs.index', 'attendance.changeVideo', 'attendance.uploadVideo', 'attendance.feedback.settings*', 'attendance.section.settings*']) }}" aria-expanded="false" aria-controls="sidebar-attendance-menu">
                         Attendance
                     </button>
-                    <div class="nav-dropdown-content">
+                    <div id="sidebar-attendance-menu" class="nav-dropdown-content" hidden>
                         <a href="{{ route('attendance.scan') }}" target="_blank" rel="noopener" class="{{ $linkActive(['attendance.scan']) }}">Attendance</a>
                         <a href="{{ route('attendance_logs.index') }}" class="{{ $linkActive(['attendance_logs.index']) }}">Attendance Logs</a>
                         <a href="{{ route('attendance.changeVideo') }}" class="{{ $linkActive(['attendance.changeVideo', 'attendance.uploadVideo']) }}">Manage Video</a>
@@ -30,21 +43,21 @@
                     </div>
                 </div>
 
-                <div class="nav-dropdown">
-                    <button type="button" class="nav-dropdown-button {{ $dropActive(['students.index', 'students.create', 'students.edit', 'students.report', 'employees.*', 'pending.index', 'pending.employees', 'students.pending']) }}">
+                <div class="nav-dropdown" data-sidebar-section="data">
+                    <button type="button" class="nav-dropdown-button {{ $dropActive(['students.index', 'students.create', 'students.edit', 'students.report', 'employees.*', 'pending.index', 'pending.employees', 'students.pending']) }}" aria-expanded="false" aria-controls="sidebar-data-menu">
                         Data
                     </button>
-                    <div class="nav-dropdown-content">
+                    <div id="sidebar-data-menu" class="nav-dropdown-content" hidden>
                         <a href="{{ route('students.index') }}" class="{{ $linkActive(['students.index', 'students.create', 'students.edit', 'students.report']) }}">Students</a>
                         <a href="{{ route('employees.index') }}" class="{{ $linkActive(['employees.index', 'employees.create', 'employees.edit']) }}">Employees</a>
                     </div>
                 </div>
 
-                <div class="nav-dropdown">
-                    <button type="button" class="nav-dropdown-button {{ $dropActive(['feedback.*', 'sms.*']) }}">
+                <div class="nav-dropdown" data-sidebar-section="communication">
+                    <button type="button" class="nav-dropdown-button {{ $dropActive(['feedback.*', 'sms.*']) }}" aria-expanded="false" aria-controls="sidebar-communication-menu">
                         Communication
                     </button>
-                    <div class="nav-dropdown-content">
+                    <div id="sidebar-communication-menu" class="nav-dropdown-content" hidden>
                         <a href="{{ route('feedback.index') }}" class="{{ $linkActive(['feedback.index']) }}">Feedback</a>
                         <a href="{{ route('sms.page') }}" class="{{ $linkActive(['sms.page', 'sms.send']) }}">SMS blast</a>
                         <a href="{{ route('sms.scanMessage') }}" class="{{ $linkActive(['sms.scanMessage', 'sms.scanMessage.update']) }}">Scanner message</a>
@@ -52,11 +65,11 @@
                 </div>
 
                 @can('isAdmin')
-                    <div class="nav-dropdown">
-                        <button type="button" class="nav-dropdown-button {{ $dropActive(['users.*', 'prospectus.*']) }}">
+                    <div class="nav-dropdown" data-sidebar-section="admin">
+                        <button type="button" class="nav-dropdown-button {{ $dropActive(['users.*', 'prospectus.*']) }}" aria-expanded="false" aria-controls="sidebar-admin-menu">
                             Admin
                         </button>
-                        <div class="nav-dropdown-content">
+                        <div id="sidebar-admin-menu" class="nav-dropdown-content" hidden>
                             <a href="{{ route('prospectus.index') }}" class="{{ $linkActive(['prospectus.*']) }}">Prospectus Manager</a>
                             <a href="{{ route('users.create') }}" class="{{ $linkActive(['users.create', 'users.store']) }}">Create Account</a>
                             <a href="{{ route('users.index') }}" class="{{ $linkActive(['users.index', 'users.edit']) }}">View Accounts</a>
@@ -73,29 +86,70 @@
             <a href="{{ route('patron.register') }}" class="btn2 btn-sm {{ $linkActive(['patron.register', 'pending.store', 'pendingEmployee.store']) }}">Register</a>
             <a href="{{ route('login') }}" class="btn5 btn-sm" style="text-decoration:none;display:inline-block;">Login</a>
         @endauth
-    </div>
-</div>
+    </nav>
+</aside>
 
 <script>
 (function () {
     const toggleBtn = document.getElementById('customMenuToggle');
     const closeBtn = document.getElementById('customMenuClose');
-    const routeWrapper = document.getElementById('routeWrapper');
-    if (!toggleBtn || !routeWrapper) return;
+    const collapseBtn = document.getElementById('sidebarCollapseToggle');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const sidebar = document.querySelector('.pantas-header');
+    if (!toggleBtn || !sidebar) return;
 
-    toggleBtn.addEventListener('click', () => routeWrapper.classList.add('open'));
-    closeBtn?.addEventListener('click', () => routeWrapper.classList.remove('open'));
+    const closeSidebar = () => document.body.classList.remove('sidebar-open');
+    const setCollapsed = (collapsed) => {
+        document.body.classList.toggle('sidebar-collapsed', collapsed);
+        collapseBtn?.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        collapseBtn?.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+        localStorage.setItem('sidebar-collapsed', collapsed ? 'true' : 'false');
+    };
+
+    setCollapsed(localStorage.getItem('sidebar-collapsed') === 'true');
+
+    toggleBtn.addEventListener('click', () => document.body.classList.add('sidebar-open'));
+    collapseBtn?.addEventListener('click', () => {
+        setCollapsed(!document.body.classList.contains('sidebar-collapsed'));
+    });
+    closeBtn?.addEventListener('click', closeSidebar);
+    backdrop?.addEventListener('click', closeSidebar);
     window.addEventListener('resize', () => {
-        if (window.innerWidth >= 768) routeWrapper.classList.remove('open');
+        if (window.innerWidth >= 769) closeSidebar();
     });
 
-    if (window.innerWidth < 769) {
-        document.querySelectorAll('.pantas-header .nav-dropdown-button').forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                btn.closest('.nav-dropdown')?.classList.toggle('open');
-            });
+    const dropdowns = Array.from(document.querySelectorAll('.pantas-header .nav-dropdown'));
+    let openDropdown = null;
+
+    const setOpenDropdown = (sectionName) => {
+        openDropdown = sectionName;
+
+        dropdowns.forEach((dropdown) => {
+            const isOpen = dropdown.dataset.sidebarSection === openDropdown;
+            const button = dropdown.querySelector('.nav-dropdown-button');
+            const content = dropdown.querySelector('.nav-dropdown-content');
+
+            dropdown.classList.toggle('open', isOpen);
+            button?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            if (content) content.hidden = !isOpen;
         });
-    }
+    };
+
+    const activeDropdown = dropdowns.find((dropdown) => {
+        return dropdown.querySelector('.nav-dropdown-button.active, .nav-dropdown-content .active');
+    });
+
+    if (activeDropdown) setOpenDropdown(activeDropdown.dataset.sidebarSection);
+
+    dropdowns.forEach((dropdown) => {
+        const btn = dropdown.querySelector('.nav-dropdown-button');
+        if (!btn) return;
+
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const nextSection = dropdown.dataset.sidebarSection;
+            setOpenDropdown(openDropdown === nextSection ? null : nextSection);
+        });
+    });
 })();
 </script>

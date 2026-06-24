@@ -271,10 +271,6 @@ header{
   .dropdown-content a:hover {
     background-color: #ffb845;
   }
-
-  .dropdown:hover .dropdown-content {
-    display: block;
-  }
   
   
   
@@ -323,10 +319,6 @@ header{
     background-color: #ffb845;
 }
 
-.attendance_dropdown:hover .attendance_dropdown-content {
-    display: block;
-}
-
   
   .logs_dropdown {
     position: relative;
@@ -373,19 +365,10 @@ header{
     background-color: #ffb845;
 }
 
-.logs_dropdown:hover .logs_dropdown-content {
-    display: block;
-}
-
 
 .dropdown {
     position: relative;
     display: inline-block;
-}
-
-/* Show the dropdown when hovering over the parent (dropdown button) */
-.dropdown:hover .dropdown-menu {
-    display: block;
 }
 
 /* The dropdown menu should be hidden by default */
