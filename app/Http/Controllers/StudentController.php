@@ -39,7 +39,11 @@ class StudentController extends Controller
         $students = $this->filteredStudentsQuery($request)
             ->orderBy('lastname', 'asc')
             ->paginate(15)
-            ->appends($request->all());
+            ->appends($request->query());
+
+        if ($request->ajax()) {
+            return view('students.partials.list-table', compact('students'));
+        }
 
         return view('students.students', compact('students', 'programs'));
     }
