@@ -1,0 +1,123 @@
+/* shadcn AlertDialog-style confirmation — BCCI branding */
+.logout-alert-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    width: min(100%, 24rem);
+    max-width: calc(100% - 2rem);
+    margin: auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+}
+
+.logout-alert-dialog::backdrop {
+    background: rgba(34, 51, 59, 0.45);
+    backdrop-filter: blur(2px);
+}
+
+.logout-alert-dialog__panel {
+    display: grid;
+    gap: 1rem;
+    border-radius: 0.75rem;
+    background: #fff;
+    padding: 1.25rem;
+    color: #22333b;
+    box-shadow:
+        0 16px 40px rgba(34, 51, 59, 0.18),
+        0 0 0 1px rgba(31, 122, 31, 0.08);
+    font-family: var(--brand-font-family, 'Inter', sans-serif);
+}
+
+.logout-alert-dialog__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.logout-alert-dialog__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #22333b;
+}
+
+.logout-alert-dialog__description {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: rgba(34, 51, 59, 0.72);
+}
+
+.logout-alert-dialog__footer {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+}
+
+.logout-alert-dialog__cancel,
+.logout-alert-dialog__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.25rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.logout-alert-dialog__cancel {
+    border: 1px solid rgba(34, 51, 59, 0.15);
+    background: #fff;
+    color: #22333b;
+}
+
+.logout-alert-dialog__cancel:hover {
+    background: #f5f7fa;
+}
+
+.logout-alert-dialog__action {
+    border: 1px solid var(--brand-logout-bg, #1f7a1f);
+    background: var(--brand-logout-bg, #1f7a1f);
+    color: var(--brand-logout-text, #fff);
+}
+
+.logout-alert-dialog__action:hover {
+    background: var(--brand-logout-hover-bg, #ffb845);
+    border-color: var(--brand-logout-hover-bg, #ffb845);
+    color: var(--brand-logout-hover-text, #22333b);
+}
+
+.logout-alert-dialog__cancel:focus-visible,
+.logout-alert-dialog__action:focus-visible {
+    outline: 2px solid var(--brand-nav-link, #1f7a1f);
+    outline-offset: 2px;
+}
+
+@media (min-width: 640px) {
+    .logout-alert-dialog__footer {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+}
+
+.logout-alert-dialog[open] .logout-alert-dialog__panel {
+    animation: logout-alert-dialog-in 0.15s ease;
+}
+
+@keyframes logout-alert-dialog-in {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}

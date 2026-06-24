@@ -10,83 +10,168 @@
 </button>
 
 <button id="sidebarCollapseToggle" class="sidebar-collapse-toggle" type="button" aria-label="Collapse sidebar" aria-expanded="true">
-    <span></span>
-    <span></span>
+    <i class="bi bi-chevron-left sidebar-collapse-toggle__icon" aria-hidden="true"></i>
 </button>
 
 <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 
 <aside class="pantas-header">
     <div class="sidebar-header">
-        <a href="{{ route('home') }}" class="sidebar-brand">
+        <a href="{{ route('home') }}" class="sidebar-brand" title="{{ config('app.name') }}">
             <img src="{{ asset('images/pantasLogo.png') }}" alt="{{ config('app.name') }}" class="header-logo-img">
         </a>
 
-        <button id="customMenuClose" class="close-btn" type="button" aria-label="Close menu">&times;</button>
+        <button id="customMenuClose" class="close-btn" type="button" aria-label="Close menu">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
     </div>
 
-    <nav id="routeWrapper" class="responsive-nav" aria-label="Main navigation">
-        <a href="{{ route('home') }}" class="btn0 btn-sm {{ $linkActive(['home']) }}">Home</a>
+    <div class="sidebar-body">
+        <p class="sidebar-menu-label" aria-hidden="true">Menu</p>
 
-        @auth
-            @can('isAdminOrStaff')
-                <div class="nav-dropdown" data-sidebar-section="attendance">
-                    <button type="button" class="nav-dropdown-button {{ $dropActive(['attendance.scan', 'attendance.process', 'attendance.section', 'attendance_logs.index', 'attendance.changeVideo', 'attendance.uploadVideo', 'attendance.feedback.settings*', 'attendance.section.settings*']) }}" aria-expanded="false" aria-controls="sidebar-attendance-menu">
-                        Attendance
-                    </button>
-                    <div id="sidebar-attendance-menu" class="nav-dropdown-content" hidden>
-                        <a href="{{ route('attendance.scan') }}" target="_blank" rel="noopener" class="{{ $linkActive(['attendance.scan']) }}">Attendance</a>
-                        <a href="{{ route('attendance_logs.index') }}" class="{{ $linkActive(['attendance_logs.index']) }}">Attendance Logs</a>
-                        <a href="{{ route('attendance.changeVideo') }}" class="{{ $linkActive(['attendance.changeVideo', 'attendance.uploadVideo']) }}">Manage Video</a>
-                        <a href="{{ route('attendance.section.settings') }}" class="{{ $linkActive(['attendance.section.settings*']) }}">Section Picker</a>
-                        <a href="{{ route('attendance.feedback.settings') }}" class="{{ $linkActive(['attendance.feedback.settings*']) }}">Logout Feedback</a>
-                    </div>
-                </div>
+        <nav id="routeWrapper" class="responsive-nav" aria-label="Main navigation">
+            <a
+                href="{{ route('home') }}"
+                class="sidebar-link {{ $linkActive(['home']) }}"
+                data-tooltip="Home"
+                @if($linkActive(['home'])) aria-current="page" @endif
+            >
+                <span class="sidebar-link__main">
+                    <i class="bi bi-house-door sidebar-link__icon" aria-hidden="true"></i>
+                    <span class="sidebar-link__label">Home</span>
+                </span>
+            </a>
 
-                <div class="nav-dropdown" data-sidebar-section="data">
-                    <button type="button" class="nav-dropdown-button {{ $dropActive(['students.index', 'students.create', 'students.edit', 'students.report', 'employees.*', 'pending.index', 'pending.employees', 'students.pending']) }}" aria-expanded="false" aria-controls="sidebar-data-menu">
-                        Data
-                    </button>
-                    <div id="sidebar-data-menu" class="nav-dropdown-content" hidden>
-                        <a href="{{ route('students.index') }}" class="{{ $linkActive(['students.index', 'students.create', 'students.edit', 'students.report']) }}">Students</a>
-                        <a href="{{ route('employees.index') }}" class="{{ $linkActive(['employees.index', 'employees.create', 'employees.edit']) }}">Employees</a>
-                    </div>
-                </div>
-
-                <div class="nav-dropdown" data-sidebar-section="communication">
-                    <button type="button" class="nav-dropdown-button {{ $dropActive(['feedback.*', 'sms.*']) }}" aria-expanded="false" aria-controls="sidebar-communication-menu">
-                        Communication
-                    </button>
-                    <div id="sidebar-communication-menu" class="nav-dropdown-content" hidden>
-                        <a href="{{ route('feedback.index') }}" class="{{ $linkActive(['feedback.index']) }}">Feedback</a>
-                        <a href="{{ route('sms.page') }}" class="{{ $linkActive(['sms.page', 'sms.send']) }}">SMS blast</a>
-                        <a href="{{ route('sms.scanMessage') }}" class="{{ $linkActive(['sms.scanMessage', 'sms.scanMessage.update']) }}">Scanner message</a>
-                    </div>
-                </div>
-
-                @can('isAdmin')
-                    <div class="nav-dropdown" data-sidebar-section="admin">
-                        <button type="button" class="nav-dropdown-button {{ $dropActive(['users.*', 'prospectus.*']) }}" aria-expanded="false" aria-controls="sidebar-admin-menu">
-                            Admin
+            @auth
+                @can('isAdminOrStaff')
+                    <div class="nav-dropdown" data-sidebar-section="attendance">
+                        <button
+                            type="button"
+                            class="nav-dropdown-button sidebar-link {{ $dropActive(['attendance.scan', 'attendance.process', 'attendance.section', 'attendance_logs.index', 'attendance.changeVideo', 'attendance.uploadVideo', 'attendance.feedback.settings*', 'attendance.section.settings*']) }}"
+                            aria-expanded="false"
+                            aria-controls="sidebar-attendance-menu"
+                            data-tooltip="Attendance"
+                        >
+                            <span class="sidebar-link__main">
+                                <i class="bi bi-clipboard-check sidebar-link__icon" aria-hidden="true"></i>
+                                <span class="sidebar-link__label">Attendance</span>
+                            </span>
+                            <i class="bi bi-chevron-down sidebar-link__chevron" aria-hidden="true"></i>
                         </button>
-                        <div id="sidebar-admin-menu" class="nav-dropdown-content" hidden>
-                            <a href="{{ route('prospectus.index') }}" class="{{ $linkActive(['prospectus.*']) }}">Prospectus Manager</a>
-                            <a href="{{ route('users.create') }}" class="{{ $linkActive(['users.create', 'users.store']) }}">Create Account</a>
-                            <a href="{{ route('users.index') }}" class="{{ $linkActive(['users.index', 'users.edit']) }}">View Accounts</a>
+                        <div id="sidebar-attendance-menu" class="nav-dropdown-content" hidden>
+                            <a href="{{ route('attendance.scan') }}" target="_blank" rel="noopener" class="{{ $linkActive(['attendance.scan']) }}" @if($linkActive(['attendance.scan'])) aria-current="page" @endif>Attendance</a>
+                            <a href="{{ route('attendance_logs.index') }}" class="{{ $linkActive(['attendance_logs.index']) }}" @if($linkActive(['attendance_logs.index'])) aria-current="page" @endif>Attendance Logs</a>
+                            <a href="{{ route('attendance.changeVideo') }}" class="{{ $linkActive(['attendance.changeVideo', 'attendance.uploadVideo']) }}" @if($linkActive(['attendance.changeVideo', 'attendance.uploadVideo'])) aria-current="page" @endif>Manage Video</a>
+                            <a href="{{ route('attendance.section.settings') }}" class="{{ $linkActive(['attendance.section.settings*']) }}" @if($linkActive(['attendance.section.settings*'])) aria-current="page" @endif>Section Picker</a>
+                            <a href="{{ route('attendance.feedback.settings') }}" class="{{ $linkActive(['attendance.feedback.settings*']) }}" @if($linkActive(['attendance.feedback.settings*'])) aria-current="page" @endif>Logout Feedback</a>
                         </div>
                     </div>
-                @endcan
 
-                <form action="{{ route('logout') }}" method="POST" class="d-inline mb-0">
+                    <div class="nav-dropdown" data-sidebar-section="data">
+                        <button
+                            type="button"
+                            class="nav-dropdown-button sidebar-link {{ $dropActive(['students.index', 'students.create', 'students.edit', 'students.report', 'employees.*', 'pending.index', 'pending.employees', 'students.pending']) }}"
+                            aria-expanded="false"
+                            aria-controls="sidebar-data-menu"
+                            data-tooltip="Data"
+                        >
+                            <span class="sidebar-link__main">
+                                <i class="bi bi-database sidebar-link__icon" aria-hidden="true"></i>
+                                <span class="sidebar-link__label">Data</span>
+                            </span>
+                            <i class="bi bi-chevron-down sidebar-link__chevron" aria-hidden="true"></i>
+                        </button>
+                        <div id="sidebar-data-menu" class="nav-dropdown-content" hidden>
+                            <a href="{{ route('students.index') }}" class="{{ $linkActive(['students.index', 'students.create', 'students.edit', 'students.report']) }}" @if($linkActive(['students.index', 'students.create', 'students.edit', 'students.report'])) aria-current="page" @endif>Students</a>
+                            <a href="{{ route('employees.index') }}" class="{{ $linkActive(['employees.index', 'employees.create', 'employees.edit']) }}" @if($linkActive(['employees.index', 'employees.create', 'employees.edit'])) aria-current="page" @endif>Employees</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-dropdown" data-sidebar-section="communication">
+                        <button
+                            type="button"
+                            class="nav-dropdown-button sidebar-link {{ $dropActive(['feedback.*', 'sms.*']) }}"
+                            aria-expanded="false"
+                            aria-controls="sidebar-communication-menu"
+                            data-tooltip="Communication"
+                        >
+                            <span class="sidebar-link__main">
+                                <i class="bi bi-chat-dots sidebar-link__icon" aria-hidden="true"></i>
+                                <span class="sidebar-link__label">Communication</span>
+                            </span>
+                            <i class="bi bi-chevron-down sidebar-link__chevron" aria-hidden="true"></i>
+                        </button>
+                        <div id="sidebar-communication-menu" class="nav-dropdown-content" hidden>
+                            <a href="{{ route('feedback.index') }}" class="{{ $linkActive(['feedback.index']) }}" @if($linkActive(['feedback.index'])) aria-current="page" @endif>Feedback</a>
+                            <a href="{{ route('sms.page') }}" class="{{ $linkActive(['sms.page', 'sms.send']) }}" @if($linkActive(['sms.page', 'sms.send'])) aria-current="page" @endif>SMS blast</a>
+                            <a href="{{ route('sms.scanMessage') }}" class="{{ $linkActive(['sms.scanMessage', 'sms.scanMessage.update']) }}" @if($linkActive(['sms.scanMessage', 'sms.scanMessage.update'])) aria-current="page" @endif>Scanner message</a>
+                        </div>
+                    </div>
+
+                    @can('isAdmin')
+                        <div class="nav-dropdown" data-sidebar-section="admin">
+                            <button
+                                type="button"
+                                class="nav-dropdown-button sidebar-link {{ $dropActive(['users.*', 'prospectus.*']) }}"
+                                aria-expanded="false"
+                                aria-controls="sidebar-admin-menu"
+                                data-tooltip="Admin"
+                            >
+                                <span class="sidebar-link__main">
+                                    <i class="bi bi-shield-lock sidebar-link__icon" aria-hidden="true"></i>
+                                    <span class="sidebar-link__label">Admin</span>
+                                </span>
+                                <i class="bi bi-chevron-down sidebar-link__chevron" aria-hidden="true"></i>
+                            </button>
+                            <div id="sidebar-admin-menu" class="nav-dropdown-content" hidden>
+                                <a href="{{ route('prospectus.index') }}" class="{{ $linkActive(['prospectus.*']) }}" @if($linkActive(['prospectus.*'])) aria-current="page" @endif>Prospectus Manager</a>
+                                <a href="{{ route('users.create') }}" class="{{ $linkActive(['users.create', 'users.store']) }}" @if($linkActive(['users.create', 'users.store'])) aria-current="page" @endif>Create Account</a>
+                                <a href="{{ route('users.index') }}" class="{{ $linkActive(['users.index', 'users.edit']) }}" @if($linkActive(['users.index', 'users.edit'])) aria-current="page" @endif>View Accounts</a>
+                            </div>
+                        </div>
+                    @endcan
+                @endcan
+            @else
+                <a
+                    href="{{ route('patron.register') }}"
+                    class="sidebar-link sidebar-link--register {{ $linkActive(['patron.register', 'pending.store', 'pendingEmployee.store']) }}"
+                    data-tooltip="Register"
+                    @if($linkActive(['patron.register', 'pending.store', 'pendingEmployee.store'])) aria-current="page" @endif
+                >
+                    <span class="sidebar-link__main">
+                        <i class="bi bi-person-plus sidebar-link__icon" aria-hidden="true"></i>
+                        <span class="sidebar-link__label">Register</span>
+                    </span>
+                </a>
+                <a href="{{ route('login') }}" class="sidebar-link sidebar-link--login" data-tooltip="Login">
+                    <span class="sidebar-link__main">
+                        <i class="bi bi-box-arrow-in-right sidebar-link__icon" aria-hidden="true"></i>
+                        <span class="sidebar-link__label">Login</span>
+                    </span>
+                </a>
+            @endauth
+        </nav>
+    </div>
+
+    @auth
+        @can('isAdminOrStaff')
+            <div class="sidebar-footer">
+                <div class="sidebar-footer__meta">
+                    <span class="sidebar-footer__dot" aria-hidden="true"></span>
+                    <span class="sidebar-footer__label">{{ config('app.name', 'BCCI Library') }}</span>
+                </div>
+                <form action="{{ route('logout') }}" method="POST" class="sidebar-footer__form" id="sidebarLogoutForm">
                     @csrf
-                    <button type="submit" class="btn5">Logout</button>
+                    <button type="button" class="sidebar-logout" data-logout-confirm data-tooltip="Logout">
+                        <span class="sidebar-link__main">
+                            <i class="bi bi-box-arrow-right sidebar-link__icon" aria-hidden="true"></i>
+                            <span class="sidebar-link__label">Logout</span>
+                        </span>
+                    </button>
                 </form>
-            @endcan
-        @else
-            <a href="{{ route('patron.register') }}" class="btn2 btn-sm {{ $linkActive(['patron.register', 'pending.store', 'pendingEmployee.store']) }}">Register</a>
-            <a href="{{ route('login') }}" class="btn5 btn-sm" style="text-decoration:none;display:inline-block;">Login</a>
-        @endauth
-    </nav>
+            </div>
+        @endcan
+    @endauth
 </aside>
 
 <script>
@@ -98,28 +183,41 @@
     const sidebar = document.querySelector('.pantas-header');
     if (!toggleBtn || !sidebar) return;
 
+    const dropdowns = Array.from(document.querySelectorAll('.pantas-header .nav-dropdown'));
+    let openDropdown = null;
+
+    const isCollapsed = () => document.body.classList.contains('sidebar-collapsed');
+
+    const closeFlyouts = () => {
+        dropdowns.forEach((dropdown) => {
+            dropdown.classList.remove('flyout-open');
+            const content = dropdown.querySelector('.nav-dropdown-content');
+            if (content && !dropdown.classList.contains('open')) {
+                content.hidden = true;
+            }
+        });
+    };
+
     const closeSidebar = () => document.body.classList.remove('sidebar-open');
+
     const setCollapsed = (collapsed) => {
         document.body.classList.toggle('sidebar-collapsed', collapsed);
         collapseBtn?.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
         collapseBtn?.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
         localStorage.setItem('sidebar-collapsed', collapsed ? 'true' : 'false');
+
+        if (collapsed) {
+            setOpenDropdown(null);
+        } else {
+            closeFlyouts();
+            const activeDropdown = dropdowns.find((dropdown) => {
+                return dropdown.querySelector('.nav-dropdown-button.active, .nav-dropdown-content .active');
+            });
+            if (activeDropdown) {
+                setOpenDropdown(activeDropdown.dataset.sidebarSection);
+            }
+        }
     };
-
-    setCollapsed(localStorage.getItem('sidebar-collapsed') === 'true');
-
-    toggleBtn.addEventListener('click', () => document.body.classList.add('sidebar-open'));
-    collapseBtn?.addEventListener('click', () => {
-        setCollapsed(!document.body.classList.contains('sidebar-collapsed'));
-    });
-    closeBtn?.addEventListener('click', closeSidebar);
-    backdrop?.addEventListener('click', closeSidebar);
-    window.addEventListener('resize', () => {
-        if (window.innerWidth >= 769) closeSidebar();
-    });
-
-    const dropdowns = Array.from(document.querySelectorAll('.pantas-header .nav-dropdown'));
-    let openDropdown = null;
 
     const setOpenDropdown = (sectionName) => {
         openDropdown = sectionName;
@@ -135,11 +233,28 @@
         });
     };
 
+    setCollapsed(localStorage.getItem('sidebar-collapsed') === 'true');
+
+    toggleBtn.addEventListener('click', () => document.body.classList.add('sidebar-open'));
+    collapseBtn?.addEventListener('click', () => {
+        setCollapsed(!isCollapsed());
+    });
+    closeBtn?.addEventListener('click', closeSidebar);
+    backdrop?.addEventListener('click', closeSidebar);
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 769) {
+            closeSidebar();
+            closeFlyouts();
+        }
+    });
+
     const activeDropdown = dropdowns.find((dropdown) => {
         return dropdown.querySelector('.nav-dropdown-button.active, .nav-dropdown-content .active');
     });
 
-    if (activeDropdown) setOpenDropdown(activeDropdown.dataset.sidebarSection);
+    if (activeDropdown && !isCollapsed()) {
+        setOpenDropdown(activeDropdown.dataset.sidebarSection);
+    }
 
     dropdowns.forEach((dropdown) => {
         const btn = dropdown.querySelector('.nav-dropdown-button');
@@ -147,9 +262,36 @@
 
         btn.addEventListener('click', (e) => {
             e.preventDefault();
+            e.stopPropagation();
+
             const nextSection = dropdown.dataset.sidebarSection;
+
+            if (isCollapsed()) {
+                const willOpen = !dropdown.classList.contains('flyout-open');
+                closeFlyouts();
+                if (willOpen) {
+                    dropdown.classList.add('flyout-open');
+                    const content = dropdown.querySelector('.nav-dropdown-content');
+                    if (content) content.hidden = false;
+                }
+                return;
+            }
+
             setOpenDropdown(openDropdown === nextSection ? null : nextSection);
         });
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!isCollapsed() || !sidebar.contains(event.target)) {
+            closeFlyouts();
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeFlyouts();
+            closeSidebar();
+        }
     });
 })();
 </script>
