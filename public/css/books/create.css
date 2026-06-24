@@ -222,10 +222,6 @@
   .dropdown-content a:hover {
     background-color: #ffb845;
   }
-
-  .dropdown:hover .dropdown-content {
-    display: block;
-  }
   
   
   
@@ -274,10 +270,6 @@
     background-color: #ffb845;
 }
 
-.attendance_dropdown:hover .attendance_dropdown-content {
-    display: block;
-}
-
   
   .logs_dropdown {
     position: relative;
@@ -322,8 +314,4 @@
 
 .logs_dropdown-content a:hover {
     background-color: #ffb845;
-}
-
-.logs_dropdown:hover .logs_dropdown-content {
-    display: block;
 }      

@@ -1,0 +1,35 @@
+/* Main content spacing — offset from sidebar and top chrome */
+:root {
+    --content-gutter-x: 1.35rem;
+    --content-gutter-top: 4.25rem;
+    --content-gutter-bottom: 1.5rem;
+}
+
+main.pantas-main {
+    padding-top: var(--content-gutter-top);
+    padding-bottom: var(--content-gutter-bottom);
+}
+
+main.pantas-main > .container-fluid {
+    padding-left: 0.5rem;
+    padding-right: 1rem;
+}
+
+@media (min-width: 992px) {
+    main.pantas-main > .container-fluid {
+        padding-left: 0.75rem;
+        padding-right: 1.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --content-gutter-top: 4.5rem;
+        --content-gutter-x: 0;
+    }
+
+    main.pantas-main > .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

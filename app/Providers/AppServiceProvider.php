@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Config;
+use App\Support\Breadcrumbs;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,5 +29,14 @@ class AppServiceProvider extends ServiceProvider
 
         // Optional: Set Carbon locale if you use translated dates
         Carbon::setLocale(Config::get('app.locale'));
+
+        View::composer(['layouts.app', 'layouts.public'], function ($view) {
+            $override = $view->getData()['breadcrumbs'] ?? null;
+
+            $view->with(
+                'breadcrumbItems',
+                Breadcrumbs::resolve(Route::currentRouteName(), is_array($override) ? $override : null),
+            );
+        });
     }
 }
