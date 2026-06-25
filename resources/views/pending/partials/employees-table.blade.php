@@ -16,7 +16,7 @@
                     <tr>
                         <td>
                             @if($e->formal_picture)
-                                <img src="{{ asset($e->formal_picture) }}" width="80" height="80" alt="" loading="lazy">
+                                <img src="{{ patron_media_url($e->formal_picture) }}" width="80" height="80" alt="" loading="lazy">
                             @else
                                 No Image
                             @endif

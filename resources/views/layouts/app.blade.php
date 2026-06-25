@@ -55,6 +55,7 @@
             <script src="{{ asset('js/data-panel.js') }}" defer></script>
             <script src="{{ asset('js/logout-confirm.js') }}" defer></script>
             <script src="{{ asset('js/patron-import-labels.js') }}" defer></script>
+            <script src="{{ asset('js/patron-signature-pad.js') }}" defer></script>
             <script src="{{ asset('js/turbo-admin.js') }}" defer></script>
         @endcan
     @endauth

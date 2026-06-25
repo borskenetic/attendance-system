@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             ProgramSeeder::class,
             StudentSeeder::class,
             EmployeeSeeder::class,
+            AttendanceLogSeeder::class,
         ]);
     }
 }

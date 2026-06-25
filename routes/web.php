@@ -9,6 +9,7 @@ use App\Http\Controllers\EmployeeIdCardController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\IdCardController;
+use App\Http\Controllers\PatronMediaController;
 use App\Http\Controllers\PendingEmployeeController;
 use App\Http\Controllers\PendingStudentController;
 use App\Http\Controllers\SmsController;
@@ -34,6 +35,10 @@ Route::get('/attendance', [AttendanceController::class, 'showScanner'])->name('a
 Route::post('/attendance', [AttendanceController::class, 'scan'])->name('attendance.process');
 Route::post('/attendance/section', [AttendanceController::class, 'processSection'])->name('attendance.section');
 Route::post('/attendance-feedback', [FeedController::class, 'store'])->name('attendance.feedback.store');
+
+Route::get('/patron-media/{path}', [PatronMediaController::class, 'show'])
+    ->where('path', '.*')
+    ->name('patron.media');
 
 // Admin + Staff
 Route::middleware(['auth', 'can:isAdminOrStaff'])->group(function () {

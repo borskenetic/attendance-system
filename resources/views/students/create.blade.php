@@ -7,7 +7,7 @@
 @endpush
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <script src="{{ asset('js/patron-signature-pad.js') }}" defer></script>
 @endpush
 
 @section('content')
@@ -142,12 +142,18 @@
                             <input type="file" name="profile_picture" id="profile_picture" class="form-control @error('profile_picture') is-invalid @enderror"
                                    accept="image/jpeg,image/png,image/jpg">
                             <p class="photo-hint">1×1 ID photo preferred. JPG or PNG, max 4 MB.</p>
+                            <div class="mt-2">
+                                <img src="" alt="Profile preview" width="100" class="rounded border d-none" id="profilePreview">
+                            </div>
                             @error('profile_picture')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-12">
                             <label class="form-label">Signature</label>
                             <div class="signature-wrap">
-                                <canvas id="studentSignaturePad"></canvas>
+                                <canvas id="studentSignaturePad"
+                                        data-signature-pad
+                                        data-signature-input="studentSignatureInput"
+                                        data-signature-clear="clearStudentSignature"></canvas>
                             </div>
                             <input type="hidden" name="student_signature" id="studentSignatureInput" value="{{ old('student_signature') }}">
                             <button type="button" id="clearStudentSignature" class="btn btn-sm btn-outline-secondary mt-2">Clear signature</button>
@@ -168,37 +174,22 @@
 @section('scripts')
 <script>
 (function () {
-    const canvas = document.getElementById('studentSignaturePad');
-    const input = document.getElementById('studentSignatureInput');
-    if (!canvas || typeof SignaturePad === 'undefined') return;
+    function initProfilePreview() {
+        const fileInput = document.getElementById('profile_picture');
+        const preview = document.getElementById('profilePreview');
+        if (!fileInput || !preview) return;
 
-    const signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+        fileInput.onchange = () => {
+            const file = fileInput.files?.[0];
+            if (!file) return;
 
-    function resizeCanvas() {
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        const data = signaturePad.isEmpty() ? null : signaturePad.toData();
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = 150 * ratio;
-        canvas.getContext('2d').scale(ratio, ratio);
-        canvas.style.width = '100%';
-        canvas.style.height = '150px';
-        signaturePad.clear();
-        if (data) signaturePad.fromData(data);
+            preview.src = URL.createObjectURL(file);
+            preview.classList.remove('d-none');
+        };
     }
 
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    document.getElementById('clearStudentSignature')?.addEventListener('click', () => {
-        signaturePad.clear();
-        input.value = '';
-    });
-
-    document.getElementById('studentForm')?.addEventListener('submit', () => {
-        if (!signaturePad.isEmpty()) {
-            input.value = signaturePad.toDataURL();
-        }
-    });
+    document.addEventListener('DOMContentLoaded', initProfilePreview);
+    document.addEventListener('turbo:load', initProfilePreview);
 })();
 </script>
 @endsection

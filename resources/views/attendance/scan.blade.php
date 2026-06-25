@@ -147,7 +147,8 @@
     }
 
     function profileUrl(path) {
-      return path ? "{{ asset('') }}" + path.replace(/^\//, '') : "{{ asset('images/2x2_undifined_gender.jpg') }}";
+      const base = @json(url('/patron-media'));
+      return path ? `${base}/${String(path).replace(/^\//, '')}` : "{{ asset('images/2x2_undifined_gender.jpg') }}";
     }
 
     input.addEventListener('keypress', function (e) {

@@ -54,12 +54,12 @@
 .student-form-page .signature-wrap canvas {
     display: block;
     width: 100%;
-    max-width: 100%;
     height: 150px;
+    touch-action: none;
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 6px;
-    touch-action: none;
+    cursor: crosshair;
 }
 
 .student-form-page .photo-hint {

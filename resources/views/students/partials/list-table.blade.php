@@ -18,7 +18,7 @@
                     <tr>
                         <td>
                             @if($student->profile_picture)
-                                <img src="{{ asset($student->profile_picture) }}" alt="Profile" class="profile-img" loading="lazy" width="80" height="80">
+                                <img src="{{ patron_media_url($student->profile_picture) }}" alt="Profile" class="profile-img" loading="lazy" width="80" height="80">
                             @else
                                 <span>No Image</span>
                             @endif

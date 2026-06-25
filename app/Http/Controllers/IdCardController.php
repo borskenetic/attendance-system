@@ -206,7 +206,7 @@ class IdCardController extends Controller
     {
         $student = Student::findOrFail($id);
 
-        $img = Image::make(public_path('images/student_signatures/BCCI ID 2026-2027 FRONT3 (1).png'));
+        $img = Image::make(public_path('images/id_templates/front.png'));
         $templateWidth = $img->width();
 
         if ($student->profile_picture && file_exists(base_path($student->profile_picture))) {
@@ -295,15 +295,17 @@ class IdCardController extends Controller
 
         // Background
         $img = Image::make(public_path('images/id_templates/back.png'));
-
         // QR Code
-        $qrPng = QrCodePng::generate($student->qrcode, 1300, 0);
+        $qrPng = QrCodePng::generate($student->qrcode, 200, 0);
         $qrImage = Image::make((string) $qrPng);
+        if ($student->qrcode) {
+            $this->drawText($img, $student->qrcode, 1555, 1540, -50, '#000');
+        }
 
         // Birth date
         if ($student->birth_date) {
             $formattedDate = Carbon::parse($student->birth_date)->format('m-d-Y');
-            $this->drawText($img, $formattedDate, 3000, 800, 300, '#000');
+            $this->drawText($img, $formattedDate, 130, 140, 28, '#000');
         }
 
         // Blood type
@@ -312,16 +314,21 @@ class IdCardController extends Controller
         }
 
         // Emergency contact details
-        if ($student->emergency_contact_name) {
-            $this->drawText($img, $student->emergency_contact_name, 2190, 2650, 250, '#000');
+        if ($student->emergency_person) {
+            $this->drawText($img, $student->emergency_person, 320, 440, 35, '#000');
+        }
+        
+        // Emergency contact details
+        if ($student->mobile_number) {
+            $this->drawText($img, $student->mobile_number, 510, 140, 28, '#000');
         }
 
-        if ($student->emergency_contact_relationship) {
-            $this->drawText($img, $student->emergency_contact_relationship, 2250, 2900, 250, '#000');
+        if ($student->emergency_relationship) {
+            $this->drawText($img, $student->emergency_relationship, 300, 2900, 250, '#000');
         }
 
-        if ($student->emergency_contact_number) {
-            $this->drawText($img, $student->emergency_contact_number, 2230, 3200, 250, '#000');
+        if ($student->emergency_number) {
+            $this->drawText($img, $student->emergency_number, 320, 480, 30, '#000');
         }
         if ($student->emergency_address) {
 
@@ -350,7 +357,7 @@ class IdCardController extends Controller
             $maxLength = max(array_map('strlen', $lines));
         
             // --------- FONT SIZE RESIZING ---------
-            $fontSize = 250;
+            $fontSize = 25;
         
             if ($maxLength > 25 && $maxLength <= 35) {
                 $fontSize = 200;
@@ -361,8 +368,8 @@ class IdCardController extends Controller
             }
         
             // --------- DRAW CENTERED MULTI-LINE TEXT ---------
-            $centerX = 2230;  
-            $startY  = 3500;
+            $centerX = 320;  
+            $startY  = 510;
             $spacing = $fontSize + 10; // dynamic vertical spacing
         
             foreach ($lines as $i => $line) {
@@ -378,8 +385,7 @@ class IdCardController extends Controller
         }
 
         // QR code
-        $img->insert($qrImage, 'top-left', 620, 510);
-
+        $img->insert($qrImage, 'top-left', 225, 180);
         return $img->response('png');
     }
 

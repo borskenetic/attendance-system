@@ -7,7 +7,7 @@
 @endpush
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <script src="{{ asset('js/patron-signature-pad.js') }}" defer></script>
 @endpush
 
 @section('content')
@@ -157,7 +157,11 @@
                             <p class="photo-hint">Leave empty to keep the current photo.</p>
                             @if($student->profile_picture)
                                 <div class="mt-2">
-                                    <img src="{{ asset($student->profile_picture) }}" alt="Current profile" width="100" class="rounded border">
+                                    <img src="{{ patron_media_url($student->profile_picture) }}" alt="Current profile" width="100" class="rounded border" id="currentProfilePreview">
+                                </div>
+                            @else
+                                <div class="mt-2">
+                                    <img src="" alt="Profile preview" width="100" class="rounded border d-none" id="currentProfilePreview">
                                 </div>
                             @endif
                         </div>
@@ -165,10 +169,13 @@
                             <label class="form-label">Signature</label>
                             @if($student->student_signature)
                                 <p class="photo-hint mb-2">Current signature (draw below to replace):</p>
-                                <img src="{{ asset($student->student_signature) }}" alt="Current signature" height="60" class="mb-2 d-block border rounded p-1 bg-white">
+                                <img src="{{ patron_media_url($student->student_signature) }}" alt="Current signature" height="60" class="mb-2 d-block border rounded p-1 bg-white">
                             @endif
                             <div class="signature-wrap">
-                                <canvas id="studentSignaturePad"></canvas>
+                                <canvas id="studentSignaturePad"
+                                        data-signature-pad
+                                        data-signature-input="studentSignatureInput"
+                                        data-signature-clear="clearStudentSignature"></canvas>
                             </div>
                             <input type="hidden" name="student_signature" id="studentSignatureInput">
                             <button type="button" id="clearStudentSignature" class="btn btn-sm btn-outline-secondary mt-2">Clear new signature</button>
@@ -189,37 +196,22 @@
 @section('scripts')
 <script>
 (function () {
-    const canvas = document.getElementById('studentSignaturePad');
-    const input = document.getElementById('studentSignatureInput');
-    if (!canvas || typeof SignaturePad === 'undefined') return;
+    function initProfilePreview() {
+        const fileInput = document.getElementById('profile_picture');
+        const preview = document.getElementById('currentProfilePreview');
+        if (!fileInput || !preview) return;
 
-    const signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+        fileInput.onchange = () => {
+            const file = fileInput.files?.[0];
+            if (!file) return;
 
-    function resizeCanvas() {
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        const data = signaturePad.isEmpty() ? null : signaturePad.toData();
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = 150 * ratio;
-        canvas.getContext('2d').scale(ratio, ratio);
-        canvas.style.width = '100%';
-        canvas.style.height = '150px';
-        signaturePad.clear();
-        if (data) signaturePad.fromData(data);
+            preview.src = URL.createObjectURL(file);
+            preview.classList.remove('d-none');
+        };
     }
 
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    document.getElementById('clearStudentSignature')?.addEventListener('click', () => {
-        signaturePad.clear();
-        input.value = '';
-    });
-
-    document.getElementById('studentForm')?.addEventListener('submit', () => {
-        if (!signaturePad.isEmpty()) {
-            input.value = signaturePad.toDataURL();
-        }
-    });
+    document.addEventListener('DOMContentLoaded', initProfilePreview);
+    document.addEventListener('turbo:load', initProfilePreview);
 })();
 </script>
 @endsection
