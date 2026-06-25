@@ -2,9 +2,6 @@
 
 @section('title', 'Create User Account')
 @section('body_class', 'account-create-body')
-@section('breadcrumbs')
-    <span class="d-none"></span>
-@endsection
 
 @push('styles')
     <style>
@@ -25,19 +22,25 @@
         .account-create-body .pantas-main > .container-fluid {
             min-height: calc(100vh - 96px);
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
             padding-top: 1.25rem;
             padding-bottom: 1.25rem;
         }
 
         .account-create-page {
+            flex: 1;
             width: min(720px, 100%);
             margin: 0 auto;
             color: var(--account-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .account-create-card {
+            width: 100%;
             background: var(--account-panel-bg);
             border: 1px solid var(--account-panel-border);
             border-radius: 12px;
@@ -239,6 +242,10 @@
 
         @media (max-width: 767.98px) {
             .account-create-body .pantas-main > .container-fluid {
+                align-items: stretch;
+            }
+
+            .account-create-page {
                 align-items: flex-start;
             }
 
