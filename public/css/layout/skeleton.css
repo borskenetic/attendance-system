@@ -61,16 +61,18 @@
     width: 2.35rem;
 }
 
-.students-data-table-wrap--loading .patron-list-table thead th {
+.data-panel-table-wrap--loading .patron-list-table thead th,
+.data-panel-table-wrap--loading .al-table thead th,
+.data-panel-table-wrap--loading .accounts-list-table thead th {
     opacity: 0.92;
 }
 
-.students-data-table-wrap--loading .skeleton-table__row td {
+.data-panel-table-wrap--loading .skeleton-table__row td {
     padding-top: 0.85rem;
     padding-bottom: 0.85rem;
 }
 
-#students-data-panel[data-loading="true"] {
+[data-hydratable-panel][data-loading="true"] {
     min-height: 28rem;
 }
 

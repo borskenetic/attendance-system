@@ -7,12 +7,16 @@ use App\Models\AttendanceLog;
 use App\Models\Setting;
 use App\Models\Student;
 use App\Services\PatronAttendanceReportService;
+use App\Support\RespondsWithHydratablePartial;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Cache;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AttendanceLogsExport;
 
 class AttendanceLogController extends Controller
 {
+    use RespondsWithHydratablePartial;
+
     public function index(Request $request)
     {
         $logs = $this->filteredLogs($request)
@@ -20,15 +24,24 @@ class AttendanceLogController extends Controller
             ->withQueryString();
 
         // ✅ Get distinct courses for dropdown
-        $courses = Student::select('course')
-            ->whereNotNull('course')
-            ->distinct()
-            ->orderBy('course')
-            ->pluck('course');
+        $courses = Cache::remember('attendance.student_courses', 600, fn () =>
+            Student::select('course')
+                ->whereNotNull('course')
+                ->distinct()
+                ->orderBy('course')
+                ->pluck('course')
+        );
 
-        $sections = Setting::attendanceSections();
+        $sections = Cache::remember('attendance.sections', 600, fn () =>
+            Setting::attendanceSections()
+        );
 
-        return view('attendance_logs.index', compact('logs', 'courses', 'sections'));
+        return $this->hydratableResponse(
+            $request,
+            'attendance_logs.index',
+            'attendance_logs.partials.list-table',
+            compact('logs', 'courses', 'sections'),
+        );
     }
 
     private function filteredLogs(Request $request)

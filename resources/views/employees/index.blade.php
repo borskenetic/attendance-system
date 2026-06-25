@@ -4,7 +4,7 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/students/students.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/layout/data-pages.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/layout/skeleton.css') }}">
 @endpush
 
 @section('content')
@@ -21,7 +21,7 @@
                 <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
 
-            <form action="{{ route('employees.index') }}" method="GET" class="row g-2 mb-3">
+            <form id="employees-filter-form" action="{{ route('employees.index') }}" method="GET" class="row g-2 mb-3">
                 <div class="col-md-4">
                     <input type="text" name="search" class="form-control form-control-sm"
                            placeholder="Search name, ID, department…" value="{{ request('search') }}">
@@ -62,71 +62,26 @@
                 'downloadIdsRoute' => route('employees.bulk.ids', request()->query()),
             ])
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover text-center align-middle patron-list-table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Profile</th>
-                            <th scope="col">Last Name</th>
-                            <th scope="col">First Name</th>
-                            <th scope="col">Department</th>
-                            <th scope="col">Position</th>
-                            <th scope="col">Employee ID</th>
-                            <th scope="col">Actions</th>
-                            <th scope="col">Generate ID</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($faculty as $employee)
-                            <tr>
-                                <td>
-                                    @if($employee->formal_picture)
-                                        <img src="{{ asset($employee->formal_picture) }}" width="80" class="rounded" alt="">
-                                    @else
-                                        No Image
-                                    @endif
-                                </td>
-                                <td>{{ $employee->lastname }}</td>
-                                <td>{{ $employee->firstname }}</td>
-                                <td>{{ $employee->department }}</td>
-                                <td>{{ $employee->position }}</td>
-                                <td>{{ $employee->employee_id ?? $employee->qrcode }}</td>
-                                <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">Options</button>
-                                        <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" href="{{ route('employees.edit', $employee->id) }}">Edit</a></li>
-                                            <li>
-                                                <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" onsubmit="return confirm('Delete this employee?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="dropdown-item" type="submit">Delete</button>
-                                                </form>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">Generate</button>
-                                        <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" href="{{ route('employees.idcard.front', $employee->id) }}" target="_blank">Front</a></li>
-                                            <li><a class="dropdown-item" href="{{ route('employees.idcard.back', $employee->id) }}" target="_blank">Back</a></li>
-                                            <li><a class="dropdown-item" href="{{ route('employees.idcard.download', $employee->id) }}">Download ZIP</a></li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="8">No employees found.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            <div class="d-flex justify-content-center mt-3">
-                {{ $faculty->withQueryString()->links('pagination::bootstrap-5') }}
+            <div id="employees-data-panel"
+                 data-hydratable-panel
+                 data-loading="false"
+                 data-form="#employees-filter-form"
+                 data-skeleton="#employees-table-skeleton"
+                 data-pagination=".data-panel-pagination"
+                 data-path-match="/employees">
+                @include('employees.partials.list-table', ['faculty' => $faculty])
             </div>
         </div>
     </div>
 </div>
+
+<template id="employees-table-skeleton">
+    @include('partials.skeleton-table', [
+        'columns' => 8,
+        'rows' => 8,
+        'loadingLabel' => 'Loading employees…',
+        'headers' => ['Profile', 'Last Name', 'First Name', 'Department', 'Position', 'Employee ID', 'Actions', 'Generate ID'],
+        'skeletonFirstCol' => 'avatar',
+    ])
+</template>
 @endsection

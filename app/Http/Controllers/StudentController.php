@@ -16,20 +16,26 @@ use App\Exports\StudentsImportTemplateExport;
 use App\Exports\StudentsListExport;
 use App\Imports\StudentsImport;
 use App\Services\BulkIdCardService;
+use App\Support\RespondsWithHydratablePartial;
 use App\Support\TableColumns;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Cache;
 use Maatwebsite\Excel\Facades\Excel;
 
 
 class StudentController extends Controller
 {
+    use RespondsWithHydratablePartial;
+
     private function programList()
     {
         if (! Schema::hasTable('programs')) {
             return collect();
         }
 
-        return Program::orderBy('program_name')->get();
+        return Cache::remember('students.program_list', 600, fn () =>
+            Program::orderBy('program_name')->get()
+        );
     }
 
     // Show all students
@@ -41,11 +47,12 @@ class StudentController extends Controller
             ->paginate(15)
             ->appends($request->query());
 
-        if ($request->ajax()) {
-            return view('students.partials.list-table', compact('students'));
-        }
-
-        return view('students.students', compact('students', 'programs'));
+        return $this->hydratableResponse(
+            $request,
+            'students.students',
+            'students.partials.list-table',
+            compact('students', 'programs'),
+        );
     }
 
     private function filteredStudentsQuery(Request $request)

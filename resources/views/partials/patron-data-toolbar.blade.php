@@ -26,8 +26,8 @@
             <summary class="patron-panel-heading">Import</summary>
             <div class="patron-panel-body">
                 <div class="patron-panel-stack">
-                    <a href="{{ route($importTemplateRoute) }}" class="btn btn-outline-secondary btn-sm w-100">Download Template</a>
-                    <form action="{{ route($importRoute) }}" method="POST" enctype="multipart/form-data" class="patron-import-form w-100">
+                    <a href="{{ route($importTemplateRoute) }}" class="btn btn-outline-secondary btn-sm w-100" data-turbo="false">Download Template</a>
+                    <form action="{{ route($importRoute) }}" method="POST" enctype="multipart/form-data" class="patron-import-form w-100" data-turbo="false">
                         @csrf
                         <div class="patron-import-row">
                             <label class="patron-import-file flex-grow-1">
@@ -46,26 +46,9 @@
         <summary class="patron-panel-heading">Export</summary>
         <div class="patron-panel-body">
             <div class="patron-panel-stack">
-                <a href="{{ $exportRoute }}" class="btn btn-outline-primary btn-sm w-100">Export</a>
-                <a href="{{ $downloadIdsRoute }}" class="btn btn-success btn-sm w-100">Download IDs</a>
+                <a href="{{ $exportRoute }}" class="btn btn-outline-primary btn-sm w-100" data-turbo="false">Export</a>
+                <a href="{{ $downloadIdsRoute }}" class="btn btn-success btn-sm w-100" data-turbo="false">Download IDs</a>
             </div>
         </div>
     </details>
 </div>
-
-@once
-    @push('scripts')
-    <script>
-    document.querySelectorAll('.patron-import-file input[type="file"]').forEach(function (input) {
-        input.addEventListener('change', function () {
-            var label = input.closest('.patron-import-file')?.querySelector('span');
-            if (label && input.files && input.files[0]) {
-                label.textContent = input.files[0].name.length > 22
-                    ? input.files[0].name.slice(0, 19) + '…'
-                    : input.files[0].name;
-            }
-        });
-    });
-    </script>
-    @endpush
-@endonce

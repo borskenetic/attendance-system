@@ -6,15 +6,12 @@
     <title>@yield('title', config('app.name'))</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset(config('branding.css_path', 'branding/branding.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/layout/navbar.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/layout/logout-alert-dialog.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/layout/app-fonts.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/layout/breadcrumbs.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/layout/app-shell.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/layout/dashboard-shell.css') }}">
     @stack('styles')
     @yield('styles')
     @stack('page-styles')
@@ -50,10 +47,15 @@
         @endcan
     @endauth
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8/dist/turbo.es2017-umd.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     @auth
         @can('isAdminOrStaff')
-            <script src="{{ asset('js/logout-confirm.js') }}"></script>
+            <script src="{{ asset('js/sidebar.js') }}" defer></script>
+            <script src="{{ asset('js/data-panel.js') }}" defer></script>
+            <script src="{{ asset('js/logout-confirm.js') }}" defer></script>
+            <script src="{{ asset('js/patron-import-labels.js') }}" defer></script>
+            <script src="{{ asset('js/turbo-admin.js') }}" defer></script>
         @endcan
     @endauth
 </body>
