@@ -6,12 +6,14 @@ use Illuminate\Http\Request;
 use App\Models\PendingStudent;
 use App\Models\PendingEmployee;
 use App\Models\Role;
+use App\Support\RespondsWithHydratablePartial;
 use App\Support\TableColumns;
 use Illuminate\Support\Str;
 
 class PendingStudentController extends Controller
 {
-    
+    use RespondsWithHydratablePartial;
+
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -40,7 +42,15 @@ class PendingStudentController extends Controller
             })
             ->paginate(10, ['*'], 'employees_page');
     
-        return view('pending.index', compact('pendingStudents', 'pendingEmployees', 'search'));
+        return $this->hydratableResponse(
+            $request,
+            'pending.index',
+            'pending.partials.students-table',
+            compact('pendingStudents', 'pendingEmployees', 'search'),
+            fn (Request $request) => $request->input('tab', 'students') === 'employees'
+                ? 'pending.partials.employees-table'
+                : 'pending.partials.students-table',
+        );
     }
 
 

@@ -3,7 +3,7 @@
 @section('title', 'Create User Account')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/layout/data-pages.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/view_accounts/list.css') }}">
 @endpush
 
 @section('content')

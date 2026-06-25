@@ -4,7 +4,6 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/students/students.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/layout/data-pages.css') }}">
     <link rel="stylesheet" href="{{ asset('css/layout/skeleton.css') }}">
 @endpush
 
@@ -66,7 +65,13 @@
                 'downloadIdsRoute' => route('students.bulk.ids', request()->query()),
             ])
 
-            <div id="students-data-panel" data-loading="false">
+            <div id="students-data-panel"
+                 data-hydratable-panel
+                 data-loading="false"
+                 data-form="#students-filter-form"
+                 data-skeleton="#students-table-skeleton"
+                 data-pagination=".data-panel-pagination"
+                 data-path-match="/students">
                 @include('students.partials.list-table', ['students' => $students])
             </div>
         </div>
@@ -74,10 +79,12 @@
 </div>
 
 <template id="students-table-skeleton">
-    @include('students.partials.skeleton-table')
+    @include('partials.skeleton-table', [
+        'columns' => 8,
+        'rows' => 8,
+        'loadingLabel' => 'Loading students…',
+        'headers' => ['Profile', 'Student ID', 'Last Name', 'First Name', 'Course', 'Year', 'Actions', 'Generate ID'],
+        'skeletonFirstCol' => 'avatar',
+    ])
 </template>
 @endsection
-
-@push('scripts')
-    <script src="{{ asset('js/students-index.js') }}"></script>
-@endpush

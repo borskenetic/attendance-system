@@ -7,11 +7,15 @@ use App\Exports\EmployeesListExport;
 use App\Imports\EmployeesImport;
 use App\Services\BulkIdCardService;
 use App\Models\Employee;
+use App\Support\RespondsWithHydratablePartial;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeController extends Controller
 {
+    use RespondsWithHydratablePartial;
+
     /**
      * Show all faculty (employees with role_id = 2)
      */
@@ -22,21 +26,30 @@ class EmployeeController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        $departments = Employee::where('role_id', 2)
-            ->whereNotNull('department')
-            ->where('department', '!=', '')
-            ->distinct()
-            ->orderBy('department')
-            ->pluck('department');
+        $departments = Cache::remember('employees.departments', 600, fn () =>
+            Employee::where('role_id', 2)
+                ->whereNotNull('department')
+                ->where('department', '!=', '')
+                ->distinct()
+                ->orderBy('department')
+                ->pluck('department')
+        );
 
-        $positions = Employee::where('role_id', 2)
-            ->whereNotNull('position')
-            ->where('position', '!=', '')
-            ->distinct()
-            ->orderBy('position')
-            ->pluck('position');
+        $positions = Cache::remember('employees.positions', 600, fn () =>
+            Employee::where('role_id', 2)
+                ->whereNotNull('position')
+                ->where('position', '!=', '')
+                ->distinct()
+                ->orderBy('position')
+                ->pluck('position')
+        );
 
-        return view('employees.index', compact('faculty', 'departments', 'positions'));
+        return $this->hydratableResponse(
+            $request,
+            'employees.index',
+            'employees.partials.list-table',
+            compact('faculty', 'departments', 'positions'),
+        );
     }
 
     private function filteredEmployeesQuery(Request $request)

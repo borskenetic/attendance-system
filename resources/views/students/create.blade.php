@@ -3,7 +3,6 @@
 @section('title', 'Register Student')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/layout/data-pages.css') }}">
     <link rel="stylesheet" href="{{ asset('css/students/create.css') }}">
 @endpush
 

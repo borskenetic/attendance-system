@@ -2,16 +2,21 @@
 
 @section('title', 'Attendance Logs')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/attendance_logs/index.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/layout/skeleton.css') }}">
+@endpush
+
 @section('content')
 <div class="attendance-logs-page">
     <div class="al-toolbar">
         <a href="{{ route('attendance_logs.reports.hub') }}" class="export-btn">Patron reports</a>
-        <a href="{{ route('attendance_logs.export.pdf', request()->query()) }}" class="export-btn">Export PDF</a>
-        <a href="{{ route('attendance_logs.export.excel', request()->query()) }}" class="export-btn">Export Excel</a>
+        <a href="{{ route('attendance_logs.export.pdf', request()->query()) }}" class="export-btn" data-turbo="false">Export PDF</a>
+        <a href="{{ route('attendance_logs.export.excel', request()->query()) }}" class="export-btn" data-turbo="false">Export Excel</a>
     </div>
 
     <div class="al-filters no-bg">
-        <form method="GET" class="al-filters-form">
+        <form id="attendance-logs-filter-form" method="GET" action="{{ route('attendance_logs.index') }}" class="al-filters-form">
             <div class="al-field">
                 <label>Search</label>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name, course, section...">
@@ -65,50 +70,26 @@
         </form>
     </div>
 
-    <div class="al-table-wrap">
-        <table class="al-table">
-            <thead>
-                <tr>
-                    <th>Last Name</th>
-                    <th>First Name</th>
-                    <th>Course</th>
-                    <th>Section</th>
-                    <th>Status</th>
-                    <th>Scanned At</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($logs as $log)
-                    <tr>
-                        <td>{{ $log->student ? $log->student->lastname : 'Unknown' }}</td>
-                        <td>{{ $log->student ? $log->student->firstname : 'Unknown' }}</td>
-                        <td>{{ $log->student ? $log->student->course : 'Unknown' }}</td>
-                        <td>{{ $log->section ?? '—' }}</td>
-                        <td>
-                            @php $status = strtolower($log->status); @endphp
-                            @if($status === 'in')
-                                <span class="in">IN</span>
-                            @elseif($status === 'out')
-                                <span class="out">OUT</span>
-                            @else
-                                <span class="out" style="background:#6b7280;">Unknown</span>
-                            @endif
-                        </td>
-                        <td>
-                            {{ $log->scanned_at?->format('Y-m-d h:i A') ?? '—' }}
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="al-empty">No attendance records found.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div class="d-flex justify-content-center mt-4">
-        {{ $logs->withQueryString()->links('pagination::bootstrap-5') }}
+    <div id="attendance-logs-data-panel"
+         data-hydratable-panel
+         data-loading="false"
+         data-form="#attendance-logs-filter-form"
+         data-skeleton="#attendance-logs-table-skeleton"
+         data-pagination=".data-panel-pagination"
+         data-path-match="/attendance-logs">
+        @include('attendance_logs.partials.list-table', ['logs' => $logs])
     </div>
 </div>
+
+<template id="attendance-logs-table-skeleton">
+    @include('partials.skeleton-table', [
+        'columns' => 6,
+        'rows' => 8,
+        'loadingLabel' => 'Loading attendance logs…',
+        'headers' => ['Last Name', 'First Name', 'Course', 'Section', 'Status', 'Scanned At'],
+        'skeletonFirstCol' => 'text',
+        'tableClass' => 'al-table',
+        'wrapClass' => 'data-panel-table-wrap data-panel-table-wrap--loading',
+    ])
+</template>
 @endsection

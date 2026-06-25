@@ -1,4 +1,4 @@
-<div class="students-data-table-wrap">
+<div class="data-panel-table-wrap">
     <div class="table-responsive">
         <table class="table table-bordered table-hover text-center align-middle patron-list-table">
             <thead>
@@ -18,7 +18,7 @@
                     <tr>
                         <td>
                             @if($student->profile_picture)
-                                <img src="{{ asset($student->profile_picture) }}" alt="Profile" class="profile-img">
+                                <img src="{{ asset($student->profile_picture) }}" alt="Profile" class="profile-img" loading="lazy" width="80" height="80">
                             @else
                                 <span>No Image</span>
                             @endif
@@ -66,7 +66,7 @@
             </tbody>
         </table>
     </div>
-    <div class="d-flex justify-content-center mt-3 students-data-pagination">
+    <div class="d-flex justify-content-center mt-3 data-panel-pagination">
         {{ $students->withQueryString()->links('pagination::bootstrap-5') }}
     </div>
 </div>

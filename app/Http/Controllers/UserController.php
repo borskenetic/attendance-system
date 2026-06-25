@@ -3,10 +3,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Support\RespondsWithHydratablePartial;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    use RespondsWithHydratablePartial;
     public function create()
     {
         // Show the createuser form
@@ -53,7 +55,12 @@ class UserController extends Controller
 
         $users = $query->orderBy('lname')->orderBy('fname')->paginate(15)->withQueryString();
 
-        return view('view_accounts.list', compact('users'));
+        return $this->hydratableResponse(
+            $request,
+            'view_accounts.list',
+            'view_accounts.partials.list-table',
+            compact('users'),
+        );
     }
 
     public function edit($id)

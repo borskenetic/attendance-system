@@ -3,7 +3,7 @@
 @section('title', 'User Accounts')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/layout/data-pages.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/layout/skeleton.css') }}">
 @endpush
 
 @section('content')
@@ -19,7 +19,7 @@
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
 
-            <form method="GET" action="{{ route('users.index') }}" class="row g-2 mb-3">
+            <form id="users-filter-form" method="GET" action="{{ route('users.index') }}" class="row g-2 mb-3">
                 <div class="col-md-8">
                     <input type="search" name="search" class="form-control form-control-sm"
                            placeholder="Search name, email, or role…"
@@ -35,53 +35,26 @@
                 @endif
             </form>
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle text-center accounts-list-table">
-                    <thead>
-                        <tr>
-                            <th scope="col">First Name</th>
-                            <th scope="col">Last Name</th>
-                            <th scope="col">Email</th>
-                            <th scope="col">Role</th>
-                            <th scope="col">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($users as $user)
-                            <tr>
-                                <td>{{ $user->fname }}</td>
-                                <td>{{ $user->lname }}</td>
-                                <td class="text-start">{{ $user->email }}</td>
-                                <td>
-                                    <span class="badge role-badge role-badge-{{ $user->role }}">
-                                        {{ ucfirst($user->role) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="d-flex flex-wrap justify-content-center gap-1">
-                                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline"
-                                              onsubmit="return confirm('Delete this user account?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="text-muted py-4">No users found.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="d-flex justify-content-center mt-3">
-                {{ $users->links('pagination::bootstrap-5') }}
+            <div id="users-data-panel"
+                 data-hydratable-panel
+                 data-loading="false"
+                 data-form="#users-filter-form"
+                 data-skeleton="#users-table-skeleton"
+                 data-pagination=".data-panel-pagination"
+                 data-path-match="/view-users">
+                @include('view_accounts.partials.list-table', ['users' => $users])
             </div>
         </div>
     </div>
 </div>
+
+<template id="users-table-skeleton">
+    @include('partials.skeleton-table', [
+        'columns' => 5,
+        'rows' => 8,
+        'loadingLabel' => 'Loading user accounts…',
+        'headers' => ['First Name', 'Last Name', 'Email', 'Role', 'Actions'],
+        'skeletonFirstCol' => 'text',
+    ])
+</template>
 @endsection

@@ -3,7 +3,7 @@
 @section('title', 'Pending Registrations')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/layout/data-pages.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/layout/skeleton.css') }}">
     <style>.data-pending-panel.hidden { display: none; }</style>
 @endpush
 
@@ -32,7 +32,7 @@
                 </div>
             </div>
 
-            <form method="GET" action="{{ route('pending.index') }}" class="row g-2 mb-3">
+            <form id="pending-filter-form" method="GET" action="{{ route('pending.index') }}" class="row g-2 mb-3">
                 <input type="hidden" name="tab" id="pendingTab" value="{{ request('tab', 'students') }}">
                 <div class="col-md-6">
                     <input type="text" name="search" value="{{ $search ?? request('search') }}" class="form-control form-control-sm" placeholder="Search pending records…">
@@ -42,128 +42,76 @@
                 </div>
             </form>
 
-            <div id="studentTable" class="data-pending-panel">
-                <h5 class="mb-3" style="font-weight:700;">Pending Students</h5>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover text-center align-middle">
-                        <thead>
-                            <tr>
-                                <th>Profile</th>
-                                <th>ID Number</th>
-                                <th>Name</th>
-                                <th>Course</th>
-                                <th>Year</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($pendingStudents as $p)
-                                <tr>
-                                    <td>
-                                        @if($p->profile_picture)
-                                            <img src="{{ asset($p->profile_picture) }}" width="80" alt="">
-                                        @else
-                                            No Image
-                                        @endif
-                                    </td>
-                                    <td>{{ $p->student_id ?? '—' }}</td>
-                                    <td>{{ $p->firstname }} {{ $p->lastname }}</td>
-                                    <td>{{ $p->course }}</td>
-                                    <td>{{ $p->year }}</td>
-                                    <td>
-                                        <form action="{{ route('students.approve', $p->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button class="btn btn-success btn-sm">Approve</button>
-                                        </form>
-                                        <form action="{{ route('students.reject', $p->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button class="btn btn-danger btn-sm">Reject</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="6">No pending student registrations.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="d-flex justify-content-center mt-3">
-                    {{ $pendingStudents->appends(request()->query())->links('pagination::bootstrap-5') }}
-                </div>
+            <div id="pending-students-panel"
+                 class="data-pending-panel"
+                 data-hydratable-panel
+                 data-loading="false"
+                 data-form="#pending-filter-form"
+                 data-skeleton="#pending-students-skeleton"
+                 data-pagination=".data-panel-pagination"
+                 data-path-match="/pending"
+                 data-enabled-when-visible="true"
+                 data-tab-input="#pendingTab">
+                @include('pending.partials.students-table')
             </div>
 
-            <div id="employeeTable" class="data-pending-panel hidden">
-                <h5 class="mb-3" style="font-weight:700;">Pending Employees</h5>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover text-center align-middle">
-                        <thead>
-                            <tr>
-                                <th>Profile</th>
-                                <th>Name</th>
-                                <th>Department</th>
-                                <th>Position</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($pendingEmployees as $e)
-                                <tr>
-                                    <td>
-                                        @if($e->formal_picture)
-                                            <img src="{{ asset($e->formal_picture) }}" width="80" alt="">
-                                        @else
-                                            No Image
-                                        @endif
-                                    </td>
-                                    <td>{{ $e->firstname }} {{ $e->lastname }}</td>
-                                    <td>{{ $e->department }}</td>
-                                    <td>{{ $e->position }}</td>
-                                    <td>
-                                        <form action="{{ route('employees.approve', $e->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button class="btn btn-success btn-sm">Approve</button>
-                                        </form>
-                                        <form action="{{ route('employees.reject', $e->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button class="btn btn-danger btn-sm">Reject</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="5">No pending employee registrations.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="d-flex justify-content-center mt-3">
-                    {{ $pendingEmployees->appends(request()->query())->links('pagination::bootstrap-5') }}
-                </div>
+            <div id="pending-employees-panel"
+                 class="data-pending-panel hidden"
+                 data-hydratable-panel
+                 data-loading="false"
+                 data-form="#pending-filter-form"
+                 data-skeleton="#pending-employees-skeleton"
+                 data-pagination=".data-panel-pagination"
+                 data-path-match="/pending"
+                 data-enabled-when-visible="true"
+                 data-tab-input="#pendingTab">
+                @include('pending.partials.employees-table')
             </div>
         </div>
     </div>
 </div>
+
+<template id="pending-students-skeleton">
+    @include('partials.skeleton-table', [
+        'columns' => 6,
+        'rows' => 8,
+        'loadingLabel' => 'Loading pending students…',
+        'headers' => ['Profile', 'ID Number', 'Name', 'Course', 'Year', 'Actions'],
+        'skeletonFirstCol' => 'avatar',
+    ])
+</template>
+
+<template id="pending-employees-skeleton">
+    @include('partials.skeleton-table', [
+        'columns' => 5,
+        'rows' => 8,
+        'loadingLabel' => 'Loading pending employees…',
+        'headers' => ['Profile', 'Name', 'Department', 'Position', 'Actions'],
+        'skeletonFirstCol' => 'avatar',
+    ])
+</template>
 @endsection
 
 @section('scripts')
 <script>
 (function () {
-    const studentTable = document.getElementById('studentTable');
-    const employeeTable = document.getElementById('employeeTable');
+    const studentPanel = document.getElementById('pending-students-panel');
+    const employeePanel = document.getElementById('pending-employees-panel');
     const btnStudents = document.getElementById('showStudents');
     const btnEmployees = document.getElementById('showEmployees');
     const tabInput = document.getElementById('pendingTab');
 
     function showStudents() {
-        studentTable.classList.remove('hidden');
-        employeeTable.classList.add('hidden');
+        studentPanel.classList.remove('hidden');
+        employeePanel.classList.add('hidden');
         btnStudents.className = 'btn btn-primary me-2';
         btnEmployees.className = 'btn btn-outline-primary';
         tabInput.value = 'students';
     }
 
     function showEmployees() {
-        employeeTable.classList.remove('hidden');
-        studentTable.classList.add('hidden');
+        employeePanel.classList.remove('hidden');
+        studentPanel.classList.add('hidden');
         btnEmployees.className = 'btn btn-primary me-2';
         btnStudents.className = 'btn btn-outline-primary';
         tabInput.value = 'employees';
