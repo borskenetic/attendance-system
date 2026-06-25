@@ -1,6 +1,6 @@
 /* Students / Employees / Pending — uses branding.css tokens */
 .data-page .card-header {
-    background-color: var(--brand-card-header-bg, #22333b) !important;
+    background-color: var(--brand-card-header-bg, #ffffff) !important;
     color: var(--brand-card-header-text, #fff) !important;
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
