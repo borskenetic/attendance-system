@@ -10,12 +10,38 @@ use ZipArchive;
 
 class EmployeeIdCardController extends Controller
 {
+    private function firstExistingPath(array $paths): ?string
+    {
+        foreach ($paths as $path) {
+            if ($path && file_exists($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
+    private function employeeTemplatePath(string $filename): string
+    {
+        $path = $this->firstExistingPath([
+            public_path("images/id_templates/{$filename}"),
+            public_path("id_templates/{$filename}"),
+            base_path("images/id_templates/{$filename}"),
+        ]);
+
+        if (! $path) {
+            abort(404, "Missing employee ID template: {$filename}. Put it in public/images/id_templates.");
+        }
+
+        return $path;
+    }
+
     public function front($id)
     {
         $employee = Employee::findOrFail($id);
     
         // Load background
-        $img = Image::make(base_path('images/id_templates/front_employee.png'));
+        $img = Image::make($this->employeeTemplatePath('front_employee.png'));
     
         // --- Formal Picture ---
         if ($employee->formal_picture && file_exists(base_path($employee->formal_picture))) {
@@ -109,7 +135,7 @@ class EmployeeIdCardController extends Controller
     public function back($id)
     {
         $employee = Employee::findOrFail($id);
-        $img = Image::make(base_path('images/id_templates/back_employee.png'));
+        $img = Image::make($this->employeeTemplatePath('back_employee.png'));
 
         // --- QR Code (Employee ID) ---
         $qrPng = QrCodePng::generate((string) ($employee->employee_id ?? $employee->id), 270, 0);
@@ -234,7 +260,7 @@ class EmployeeIdCardController extends Controller
             });
         }
         
-        $addLength = strlen($employee->address);
+        $addLength = strlen((string) $employee->address);
     
         // Base font size
         $addFontSize = 25;
