@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
         // Optional: Set Carbon locale if you use translated dates
         Carbon::setLocale(Config::get('app.locale'));
 
-        View::composer(['layouts.app', 'layouts.public'], function ($view) {
+        View::composer(['layouts.app'], function ($view) {
             $override = $view->getData()['breadcrumbs'] ?? null;
 
             $view->with(

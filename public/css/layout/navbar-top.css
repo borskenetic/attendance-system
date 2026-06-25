@@ -1,0 +1,192 @@
+/* Public landing — horizontal top navigation (872a7cf layout) */
+.layout-public .pantas-header {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    position: relative;
+    z-index: 1050;
+    font-family: var(--brand-font-family, 'Inter', sans-serif);
+}
+
+.layout-public .pantas-header .header-logo-img {
+    height: 32px;
+    width: auto;
+}
+
+.layout-public .pantas-header #routeWrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem;
+    align-items: center;
+}
+
+.layout-public .pantas-header .btn0,
+.layout-public .pantas-header .btn2,
+.layout-public .pantas-header .nav-dropdown-button {
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 5px 15px;
+    margin-top: 8px;
+    font-family: var(--brand-font-family, 'Inter', sans-serif);
+    text-decoration: none;
+    display: inline-block;
+    white-space: nowrap;
+    transition: color 0.2s, background-color 0.2s;
+    color: var(--brand-nav-link, #1f7a1f);
+    background: none;
+    border: none;
+    cursor: pointer;
+    letter-spacing: -0.01em;
+}
+
+.layout-public .pantas-header .btn0:hover,
+.layout-public .pantas-header .btn0.active,
+.layout-public .pantas-header .btn2:hover,
+.layout-public .pantas-header .btn2.active,
+.layout-public .pantas-header .nav-dropdown-button:hover,
+.layout-public .pantas-header .nav-dropdown-button.active {
+    color: var(--brand-nav-link-hover, #145214);
+}
+
+.layout-public .pantas-header .btn5 {
+    background-color: var(--brand-logout-bg, #1f7a1f);
+    font-weight: 600;
+    font-size: 0.8rem;
+    border-radius: 10px;
+    padding: 5px 15px;
+    margin-top: 8px;
+    font-family: var(--brand-font-family, 'Inter', sans-serif);
+    color: var(--brand-logout-text, #fff);
+    border: none;
+    cursor: pointer;
+    letter-spacing: -0.01em;
+}
+
+.layout-public .pantas-header .btn5:hover {
+    background-color: var(--brand-logout-hover-bg, #ffb845);
+    color: var(--brand-logout-hover-text, #22333b);
+}
+
+.layout-public .pantas-header .nav-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.layout-public .pantas-header .nav-dropdown-button:focus {
+    outline: none;
+}
+
+.layout-public .pantas-header .nav-dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: #fff;
+    min-width: 210px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    z-index: 1100;
+    border-radius: 4px;
+    padding: 0.25rem 0;
+    border-top: 3px solid var(--brand-nav-link, #1f7a1f);
+}
+
+.layout-public .pantas-header .nav-dropdown:hover .nav-dropdown-content {
+    display: block;
+}
+
+.layout-public .pantas-header .nav-dropdown-content a {
+    color: var(--brand-nav-link, #1f7a1f);
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+    font-weight: 600;
+    font-size: 0.8rem;
+    font-family: var(--brand-font-family, 'Inter', sans-serif);
+    letter-spacing: -0.01em;
+}
+
+.layout-public .pantas-header .nav-dropdown-content a:hover,
+.layout-public .pantas-header .nav-dropdown-content a.active {
+    background-color: var(--brand-nav-dropdown-hover-bg, #e8f5e9);
+    color: var(--brand-nav-dropdown-hover-text, #145214);
+}
+
+.layout-public .pantas-banner .banner-img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.layout-public .toggle-btn,
+.layout-public .close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    color: var(--brand-nav-link, #1f7a1f);
+}
+
+.layout-public .close-btn {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .layout-public .pantas-header #routeWrapper {
+        display: none !important;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        left: 0;
+        background-color: #fff;
+        width: 100%;
+        padding: 1rem;
+        z-index: 1100;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .layout-public .pantas-header #routeWrapper.open {
+        display: flex !important;
+    }
+
+    .layout-public .pantas-header #customMenuToggle {
+        display: block !important;
+        margin-left: auto;
+    }
+
+    .layout-public .pantas-header .close-btn {
+        display: block;
+        align-self: flex-end;
+    }
+
+    .layout-public .pantas-header .nav-dropdown {
+        width: 100%;
+    }
+
+    .layout-public .pantas-header .nav-dropdown-content {
+        position: static;
+        display: none;
+        box-shadow: none;
+        border-left: 3px solid var(--brand-nav-link, #1f7a1f);
+        margin: 0.25rem 0 0.5rem;
+        text-align: left;
+        border-top: none;
+    }
+
+    .layout-public .pantas-header .nav-dropdown.open .nav-dropdown-content {
+        display: block;
+    }
+
+    .layout-public .pantas-header .nav-dropdown-button::after {
+        content: ' ▾';
+        font-size: 0.7rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .layout-public .pantas-header #customMenuToggle,
+    .layout-public .pantas-header #customMenuClose {
+        display: none !important;
+    }
+}

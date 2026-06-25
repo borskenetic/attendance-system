@@ -24,6 +24,11 @@
             max-height: 50px;
             width: auto;
         }
+        .pantas-header .header-logo-img {
+            margin-left: 0;
+            max-width: 190px;
+            width: 100%;
+        }
         .school-name{
             color: red;
             margin-left: 5px;
