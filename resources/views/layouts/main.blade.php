@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends(auth()->check() && auth()->user()->can('isAdminOrStaff') ? 'layouts.app' : 'layouts.shell-public')
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/books/index.css') }}">

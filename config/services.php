@@ -28,6 +28,10 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    'background_remover' => [
+        'url' => env('BACKGROUND_REMOVER_URL', 'http://127.0.0.1:8010/remove-bg'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

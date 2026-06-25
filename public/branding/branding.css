@@ -15,6 +15,13 @@
     --brand-nav-dropdown-hover-bg: #e8f5e9;
     --brand-nav-dropdown-hover-text: #145214;
 
+    /* Sidebar */
+    --brand-sidebar-bg: #f8faf8;
+    --brand-sidebar-border: rgba(31, 122, 31, 0.12);
+    --brand-sidebar-hover-bg: #eef7ee;
+    --brand-sidebar-active-bg: #e8f5e9;
+    --brand-sidebar-active-bar: #1f7a1f;
+
     /* Logout / primary chrome buttons */
     --brand-logout-bg: #1f7a1f;
     --brand-logout-text: #ffffff;

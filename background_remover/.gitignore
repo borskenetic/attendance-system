@@ -1,0 +1,5 @@
+.bg_venv/
+.venv/
+.tmp/
+__pycache__/
+*.py[cod]
