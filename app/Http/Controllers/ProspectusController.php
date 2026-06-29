@@ -26,13 +26,18 @@ class ProspectusController extends Controller
         $data = $request->validate([
             'program_code' => 'required|unique:programs,program_code',
             'program_name' => 'required',
-            'total_years'  => 'required|integer|min:1|max:6',
         ]);
 
-        $program = Program::create($data);
+        $totalYears = 4;
 
-        // auto-generate year grids
-        for ($i = 1; $i <= $program->total_years; $i++) {
+        $program = Program::create([
+            'program_code' => $data['program_code'],
+            'program_name' => $data['program_name'],
+            'total_years' => $totalYears,
+        ]);
+
+        // auto-generate year grids (default 4 years)
+        for ($i = 1; $i <= $totalYears; $i++) {
             ProgramYear::create([
                 'program_id' => $program->id,
                 'year_level' => $i,

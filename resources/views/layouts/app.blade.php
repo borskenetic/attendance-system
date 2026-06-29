@@ -16,7 +16,7 @@
     @yield('styles')
     @stack('page-styles')
 </head>
-<body class="layout-dashboard @yield('body_class')" style="background: var(--brand-page-bg, #f5f7fa);">
+<body class="layout-dashboard @yield('body_class')" data-turbo="false" style="background: var(--brand-page-bg, #f5f7fa);">
     @include('layouts.partials.navbar')
 
     @hasSection('banner')
@@ -47,16 +47,15 @@
         @endcan
     @endauth
 
-    <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8/dist/turbo.es2017-umd.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @auth
         @can('isAdminOrStaff')
-            <script src="{{ asset('js/sidebar.js') }}" defer></script>
-            <script src="{{ asset('js/data-panel.js') }}" defer></script>
-            <script src="{{ asset('js/logout-confirm.js') }}" defer></script>
-            <script src="{{ asset('js/patron-import-labels.js') }}" defer></script>
-            <script src="{{ asset('js/patron-signature-pad.js') }}" defer></script>
-            <script src="{{ asset('js/turbo-admin.js') }}" defer></script>
+            <script src="{{ asset('js/sidebar.js') }}"></script>
+            <script src="{{ asset('js/data-panel.js') }}"></script>
+            <script src="{{ asset('js/logout-confirm.js') }}"></script>
+            <script src="{{ asset('js/patron-import-labels.js') }}"></script>
+            <script src="{{ asset('js/patron-signature-pad.js') }}"></script>
+            <script src="{{ asset('js/turbo-admin.js') }}"></script>
         @endcan
     @endauth
 </body>

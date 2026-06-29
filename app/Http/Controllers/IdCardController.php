@@ -140,6 +140,46 @@ class IdCardController extends Controller
         }
     }
 
+    private function yearLevelToRoman(?string $year): ?string
+    {
+        if ($year === null || trim($year) === '') {
+            return null;
+        }
+
+        if (! preg_match('/(\d+)/', $year, $matches)) {
+            return null;
+        }
+
+        $map = [
+            1 => 'I',
+            2 => 'II',
+            3 => 'III',
+            4 => 'IV',
+            5 => 'V',
+            6 => 'VI',
+        ];
+
+        $level = (int) $matches[1];
+
+        return $map[$level] ?? null;
+    }
+
+    private function formatIdCardCourseYear(?string $course, ?string $year): string
+    {
+        $course = strtoupper(trim((string) $course));
+        $roman = $this->yearLevelToRoman($year);
+
+        if ($course !== '' && $roman !== null) {
+            return $course.' - '.$roman;
+        }
+
+        if ($course !== '') {
+            return $course;
+        }
+
+        return $roman ?? '';
+    }
+
     private function isRgbBackgroundColor(int $rgba, array $targetRgb, int $tolerance): bool
     {
         $r = ($rgba >> 16) & 0xFF;
@@ -359,7 +399,7 @@ class IdCardController extends Controller
         }
 
         $fullName = strtoupper(trim($student->firstname . ' ' . $student->middle_initial . ' ' . $student->lastname));
-        $courseYear = strtoupper(trim($student->course . ' ' . $student->year));
+        $courseYear = $this->formatIdCardCourseYear($student->course, $student->year);
         $centerX = (int) ($templateWidth / 2);
 
         $this->drawText($img, $fullName, $centerX, 731, 36, '#fff', 'center', 'middle');

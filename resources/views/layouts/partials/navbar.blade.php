@@ -124,7 +124,7 @@
                                 <i class="bi bi-chevron-down sidebar-link__chevron" aria-hidden="true"></i>
                             </button>
                             <div id="sidebar-admin-menu" class="nav-dropdown-content" hidden>
-                                <a href="{{ route('prospectus.index') }}" class="{{ $linkActive(['prospectus.*']) }}" @if($linkActive(['prospectus.*'])) aria-current="page" @endif>Prospectus Manager</a>
+                                <a href="{{ route('prospectus.index') }}" class="{{ $linkActive(['prospectus.*']) }}" @if($linkActive(['prospectus.*'])) aria-current="page" @endif>School Setup</a>
                                 <a href="{{ route('users.create') }}" class="{{ $linkActive(['users.create', 'users.store']) }}" @if($linkActive(['users.create', 'users.store'])) aria-current="page" @endif>Create Account</a>
                                 <a href="{{ route('users.index') }}" class="{{ $linkActive(['users.index', 'users.edit']) }}" @if($linkActive(['users.index', 'users.edit'])) aria-current="page" @endif>View Accounts</a>
                             </div>

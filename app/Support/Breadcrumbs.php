@@ -118,7 +118,7 @@ class Breadcrumbs
             'label' => 'Admin',
             'children' => [
                 [
-                    'label' => 'Prospectus Manager',
+                    'label' => 'School Setup',
                     'routes' => ['prospectus.*'],
                     'url' => 'prospectus.index',
                 ],
