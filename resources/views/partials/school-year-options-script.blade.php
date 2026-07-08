@@ -10,3 +10,4 @@
 <script>
 window.SCHOOL_YEAR_OPTIONS = @json($schoolYearOptions);
 </script>
+<script src="{{ asset('js/program-year-select.js') }}?v=3"></script>

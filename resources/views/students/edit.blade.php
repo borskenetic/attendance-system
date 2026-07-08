@@ -9,7 +9,6 @@
 @push('scripts')
     <script src="{{ asset('js/patron-signature-pad.js') }}" defer></script>
     @include('partials.school-year-options-script')
-    <script src="{{ asset('js/program-year-select.js') }}" defer></script>
 @endpush
 
 @section('content')

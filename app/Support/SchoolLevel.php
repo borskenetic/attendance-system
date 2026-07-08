@@ -55,18 +55,10 @@ class SchoolLevel
         };
     }
 
-    /** @return list<array{code: string, name: string, school_level: string}> */
-    public static function defaultGradePrograms(): array
+    /** @return list<array{program_code: string, program_name: string, school_level: string}> */
+    public static function defaultJuniorHighPrograms(): array
     {
         $programs = [];
-
-        foreach (self::yearOptions(self::SENIOR_HIGH) as $grade) {
-            $programs[] = [
-                'program_code' => 'GR'.str_replace('Grade ', '', $grade),
-                'program_name' => $grade,
-                'school_level' => self::SENIOR_HIGH,
-            ];
-        }
 
         foreach (self::yearOptions(self::JUNIOR_HIGH) as $grade) {
             $programs[] = [
@@ -77,6 +69,26 @@ class SchoolLevel
         }
 
         return $programs;
+    }
+
+    /** @return list<array{program_code: string, program_name: string, school_level: string}> */
+    public static function defaultSeniorHighPrograms(): array
+    {
+        return [
+            ['program_code' => 'GR11ACAD-BE', 'program_name' => 'GRADE 11 Academic: BE', 'school_level' => self::SENIOR_HIGH],
+            ['program_code' => 'GR11TECH-ICT', 'program_name' => 'GRADE 11 Tech-Pro: ICT', 'school_level' => self::SENIOR_HIGH],
+            ['program_code' => 'GR12ABM', 'program_name' => 'GRADE 12 ABM', 'school_level' => self::SENIOR_HIGH],
+            ['program_code' => 'GR12HUMSS', 'program_name' => 'GRADE 12 HUMSS', 'school_level' => self::SENIOR_HIGH],
+        ];
+    }
+
+    /** @return list<array{code: string, name: string, school_level: string}> */
+    public static function defaultGradePrograms(): array
+    {
+        return array_merge(
+            self::defaultSeniorHighPrograms(),
+            self::defaultJuniorHighPrograms()
+        );
     }
 
     public static function gradeSortValue(string $programName): int

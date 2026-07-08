@@ -14,19 +14,24 @@ class ProgramSeeder extends Seeder
     {
         $programs = [
             // College
+            ['program_code' => 'BSA', 'program_name' => 'Bachelor of Science in Accountancy', 'school_level' => SchoolLevel::COLLEGE],
+            ['program_code' => 'BSBA', 'program_name' => 'Bachelor of Science in Business Administration', 'school_level' => SchoolLevel::COLLEGE],
             ['program_code' => 'BSCS', 'program_name' => 'Bachelor of Science in Computer Science', 'school_level' => SchoolLevel::COLLEGE],
+            ['program_code' => 'BSIS', 'program_name' => 'Bachelor of Science in Information Systems', 'school_level' => SchoolLevel::COLLEGE],
             ['program_code' => 'BSIT', 'program_name' => 'Bachelor of Science in Information Technology', 'school_level' => SchoolLevel::COLLEGE],
             ['program_code' => 'BSED', 'program_name' => 'Bachelor of Secondary Education', 'school_level' => SchoolLevel::COLLEGE],
-            ['program_code' => 'BSBA', 'program_name' => 'Bachelor of Science in Business Administration', 'school_level' => SchoolLevel::COLLEGE],
-            ['program_code' => 'BSA', 'program_name' => 'Bachelor of Science in Accountancy', 'school_level' => SchoolLevel::COLLEGE],
+            ['program_code' => 'BTVTED', 'program_name' => 'Bachelor of Technical-Vocational Teacher Education', 'school_level' => SchoolLevel::COLLEGE],
         ];
 
-        $programs = array_merge($programs, SchoolLevel::defaultGradePrograms());
+        $programs = array_merge(
+            $programs,
+            SchoolLevel::defaultSeniorHighPrograms(),
+            SchoolLevel::defaultJuniorHighPrograms()
+        );
 
         $seededCodes = array_column($programs, 'program_code');
 
         Program::query()
-            ->whereIn('school_level', [SchoolLevel::SENIOR_HIGH, SchoolLevel::JUNIOR_HIGH])
             ->whereNotIn('program_code', $seededCodes)
             ->get()
             ->each(fn (Program $program) => $program->delete());
@@ -58,5 +63,6 @@ class ProgramSeeder extends Seeder
         }
 
         Cache::forget('students.programs_by_level.v2');
+        Cache::forget('students.programs_by_level.v3');
     }
 }

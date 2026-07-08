@@ -33,7 +33,7 @@ class StudentController extends Controller
             return collect();
         }
 
-        return Cache::remember('students.programs_by_level.v2', 600, fn () => Program::groupedForSelect());
+        return Cache::remember('students.programs_by_level.v3', 600, fn () => Program::groupedForSelect());
     }
 
     private function programList()
