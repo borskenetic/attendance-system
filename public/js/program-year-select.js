@@ -23,18 +23,43 @@
         return GRADE_LEVELS.has(level);
     }
 
-    function selectedCourseOption(courseSelect) {
-        const value = courseSelect.value;
+    function programMeta(courseSelect) {
+        const code = courseSelect.value;
 
-        if (!value) {
-            return courseSelect.selectedOptions[0] || null;
+        if (!code) {
+            return null;
         }
 
-        return (
-            courseSelect.querySelector(`option[value="${CSS.escape(value)}"]`)
-            || courseSelect.selectedOptions[0]
-            || null
-        );
+        return global.PROGRAM_META?.[code] || null;
+    }
+
+    function inferLevelFromOption(option) {
+        const optgroup = option?.parentElement;
+
+        if (!optgroup || optgroup.tagName !== 'OPTGROUP') {
+            return 'college';
+        }
+
+        const label = (optgroup.label || '').toLowerCase();
+
+        if (label.includes('senior')) {
+            return 'senior_high';
+        }
+
+        if (label.includes('junior')) {
+            return 'junior_high';
+        }
+
+        return 'college';
+    }
+
+    function resolveCourseContext(courseSelect) {
+        const meta = programMeta(courseSelect);
+        const selectedOption = courseSelect.selectedOptions[0] || null;
+        const level = meta?.level || inferLevelFromOption(selectedOption);
+        const gradeLabel = meta?.gradeLabel || meta?.name || selectedOption?.textContent?.trim() || '';
+
+        return { level, gradeLabel };
     }
 
     function toggleYearField(yearSelect, show) {
@@ -46,19 +71,15 @@
         }
 
         wrap.classList.toggle('d-none', !show);
+        wrap.style.display = show ? '' : 'none';
         yearSelect.required = show;
     }
 
     function syncYearOptions(courseSelect, yearSelect) {
-        const selectedOption = selectedCourseOption(courseSelect);
-        const level = selectedOption?.dataset?.schoolLevel || 'college';
-        const gradeLabel = (
-            selectedOption?.dataset?.gradeLabel
-            || (isGradeLevel(level) ? selectedOption?.textContent?.trim() : '')
-            || ''
-        );
         const currentValue = yearSelect.value;
         const hasCourse = Boolean(courseSelect.value);
+        const { level, gradeLabel } = resolveCourseContext(courseSelect);
+        const placeholder = yearSelect.querySelector('option[value=""]')?.textContent || 'Select year…';
 
         if (isGradeLevel(level) && hasCourse && gradeLabel) {
             yearSelect.innerHTML = '';
@@ -75,7 +96,12 @@
 
         const years = hasCourse ? yearOptionsForLevel(level) : [];
 
-        yearSelect.innerHTML = '<option value="">Select year…</option>';
+        yearSelect.innerHTML = '';
+
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = placeholder;
+        yearSelect.appendChild(placeholderOption);
 
         years.forEach((year) => {
             const option = document.createElement('option');
@@ -125,6 +151,10 @@
 
     if (!global.SCHOOL_YEAR_OPTIONS) {
         global.SCHOOL_YEAR_OPTIONS = DEFAULT_SCHOOL_YEAR_OPTIONS;
+    }
+
+    if (!global.PROGRAM_META) {
+        global.PROGRAM_META = {};
     }
 
     if (document.readyState === 'loading') {

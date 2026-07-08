@@ -8,7 +8,7 @@
 
 @push('scripts')
     <script src="{{ asset('js/patron-signature-pad.js') }}" defer></script>
-    @include('partials.school-year-options-script')
+    @include('partials.school-year-options-script', ['programsByLevel' => $programsByLevel])
 @endpush
 
 @section('content')
