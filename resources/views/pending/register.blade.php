@@ -9,6 +9,8 @@
 @push('scripts')
     <script src="{{ asset('js/patron-signature-pad.js') }}" defer></script>
     <script src="{{ asset('js/pending-register.js') }}" defer></script>
+    @include('partials.school-year-options-script')
+    <script src="{{ asset('js/program-year-select.js') }}" defer></script>
 @endpush
 
 @section('content')
@@ -80,15 +82,22 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="student_course">Course <span class="required">*</span></label>
-                            <input type="text" name="course" id="student_course" class="form-control" value="{{ old('course') }}" placeholder="e.g. BSIT" required>
+                            @include('partials.program-course-select', [
+                                'programsByLevel' => $programsByLevel,
+                                'selected' => old('course'),
+                                'id' => 'student_course',
+                                'yearTarget' => 'student_year',
+                                'required' => true,
+                                'inputClass' => 'form-select',
+                            ])
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6" data-year-field>
                             <label class="form-label" for="student_year">Year level <span class="required">*</span></label>
                             <select name="year" id="student_year" class="form-select" required>
                                 <option value="">Select year level</option>
-                                @foreach(['1st','2nd','3rd','4th','5th','6th'] as $y)
-                                    <option value="{{ $y }} Year" {{ old('year') === $y . ' Year' ? 'selected' : '' }}>{{ $y }} Year</option>
-                                @endforeach
+                                @if(old('year'))
+                                    <option value="{{ old('year') }}" selected>{{ old('year') }}</option>
+                                @endif
                             </select>
                         </div>
                     </div>

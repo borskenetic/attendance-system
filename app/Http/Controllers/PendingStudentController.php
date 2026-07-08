@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\PendingStudent;
 use App\Models\PendingEmployee;
+use App\Models\Program;
 use App\Models\Role;
 use App\Support\RespondsWithHydratablePartial;
 use App\Support\TableColumns;
@@ -57,7 +58,9 @@ class PendingStudentController extends Controller
     public function create()
     {
         $roles = Role::all();
-        return view('pending.register', compact('roles'));
+        $programsByLevel = Program::groupedForSelect();
+
+        return view('pending.register', compact('roles', 'programsByLevel'));
     }
 
     public function store(Request $request)

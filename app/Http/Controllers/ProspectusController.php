@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Program;
 use App\Models\ProgramYear;
 use App\Models\ProgramCourse;
+use App\Support\SchoolLevel;
 use Illuminate\Http\Request;
 
 class ProspectusController extends Controller
@@ -14,8 +15,21 @@ class ProspectusController extends Controller
      */
     public function index()
     {
-        $programs = Program::with('years.courses')->orderBy('program_name')->get();
-        return view('prospectus.index', compact('programs'));
+        $programs = Program::with('years.courses')->get();
+        $programsByLevel = $programs
+            ->groupBy(fn (Program $program) => $program->school_level ?: SchoolLevel::COLLEGE)
+            ->map(function ($group, string $level) {
+                if (SchoolLevel::usesIndividualGrades($level)) {
+                    return $group
+                        ->sortBy(fn (Program $program) => SchoolLevel::gradeSortValue($program->program_name))
+                        ->values();
+                }
+
+                return $group->sortBy('program_name')->values();
+            });
+        $schoolLevels = SchoolLevel::labels();
+
+        return view('prospectus.index', compact('programs', 'programsByLevel', 'schoolLevels'));
     }
 
     /**
@@ -26,17 +40,19 @@ class ProspectusController extends Controller
         $data = $request->validate([
             'program_code' => 'required|unique:programs,program_code',
             'program_name' => 'required',
+            'school_level' => 'required|in:'.implode(',', SchoolLevel::ordered()),
         ]);
 
-        $totalYears = 4;
+        $totalYears = SchoolLevel::defaultYearCount($data['school_level']);
 
         $program = Program::create([
             'program_code' => $data['program_code'],
             'program_name' => $data['program_name'],
+            'school_level' => $data['school_level'],
             'total_years' => $totalYears,
         ]);
 
-        // auto-generate year grids (default 4 years)
+        // auto-generate year grids based on school level
         for ($i = 1; $i <= $totalYears; $i++) {
             ProgramYear::create([
                 'program_id' => $program->id,

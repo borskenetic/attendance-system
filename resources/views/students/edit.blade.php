@@ -8,6 +8,8 @@
 
 @push('scripts')
     <script src="{{ asset('js/patron-signature-pad.js') }}" defer></script>
+    @include('partials.school-year-options-script')
+    <script src="{{ asset('js/program-year-select.js') }}" defer></script>
 @endpush
 
 @section('content')
@@ -16,7 +18,6 @@
     if ($birthValue) {
         $birthValue = substr((string) $birthValue, 0, 10);
     }
-    $yearOptions = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', '6th Year'];
     $currentYear = old('year', $student->year);
 @endphp
 
@@ -87,29 +88,22 @@
                         </div>
                         <div class="col-md-6">
                             <label for="course" class="form-label">Course / program</label>
-                            <select name="course" id="course" class="form-select @error('course') is-invalid @enderror">
-                                <option value="">Select course…</option>
-                                @foreach($programs as $program)
-                                    <option value="{{ $program->program_code }}"
-                                        {{ old('course', $student->course) == $program->program_code ? 'selected' : '' }}>
-                                        {{ $program->program_name }}
-                                    </option>
-                                @endforeach
-                                @if($student->course && !$programs->contains('program_code', $student->course))
-                                    <option value="{{ $student->course }}" selected>{{ $student->course }} (current)</option>
-                                @endif
-                            </select>
-                            @error('course')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            @include('partials.program-course-select', [
+                                'programsByLevel' => $programsByLevel,
+                                'selected' => old('course', $student->course),
+                                'inputClass' => 'form-select' . ($errors->has('course') ? ' is-invalid' : ''),
+                            ])
+                            @if($student->course && !$programsByLevel->flatten(1)->contains('program_code', $student->course))
+                                <p class="photo-hint mb-0">Current value not in School Setup: {{ $student->course }}</p>
+                            @endif
+                            @error('course')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6" data-year-field>
                             <label for="year" class="form-label">Year level</label>
                             <select name="year" id="year" class="form-select @error('year') is-invalid @enderror">
                                 <option value="">Select year…</option>
-                                @foreach($yearOptions as $y)
-                                    <option value="{{ $y }}" {{ $currentYear == $y ? 'selected' : '' }}>{{ $y }}</option>
-                                @endforeach
-                                @if($currentYear && !in_array($currentYear, $yearOptions))
-                                    <option value="{{ $currentYear }}" selected>{{ $currentYear }} (current)</option>
+                                @if($currentYear)
+                                    <option value="{{ $currentYear }}" selected>{{ $currentYear }}</option>
                                 @endif
                             </select>
                             @error('year')<div class="invalid-feedback">{{ $message }}</div>@enderror

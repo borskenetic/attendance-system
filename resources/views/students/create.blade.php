@@ -8,6 +8,8 @@
 
 @push('scripts')
     <script src="{{ asset('js/patron-signature-pad.js') }}" defer></script>
+    @include('partials.school-year-options-script')
+    <script src="{{ asset('js/program-year-select.js') }}" defer></script>
 @endpush
 
 @section('content')
@@ -73,24 +75,21 @@
                         </div>
                         <div class="col-md-6">
                             <label for="course" class="form-label">Course / program <span class="text-danger">*</span></label>
-                            <select name="course" id="course" class="form-select @error('course') is-invalid @enderror" required>
-                                <option value="">Select course…</option>
-                                @foreach($programs as $program)
-                                    <option value="{{ $program->program_code }}"
-                                        {{ old('course') == $program->program_code ? 'selected' : '' }}>
-                                        {{ $program->program_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('course')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            @include('partials.program-course-select', [
+                                'programsByLevel' => $programsByLevel,
+                                'selected' => old('course'),
+                                'required' => true,
+                                'inputClass' => 'form-select' . ($errors->has('course') ? ' is-invalid' : ''),
+                            ])
+                            @error('course')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6" data-year-field>
                             <label for="year" class="form-label">Year level <span class="text-danger">*</span></label>
                             <select name="year" id="year" class="form-select @error('year') is-invalid @enderror" required>
                                 <option value="">Select year…</option>
-                                @foreach(['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', '6th Year'] as $y)
-                                    <option value="{{ $y }}" {{ old('year') == $y ? 'selected' : '' }}>{{ $y }}</option>
-                                @endforeach
+                                @if(old('year'))
+                                    <option value="{{ old('year') }}" selected>{{ old('year') }}</option>
+                                @endif
                             </select>
                             @error('year')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>

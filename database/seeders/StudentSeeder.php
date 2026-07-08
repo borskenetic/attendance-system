@@ -66,6 +66,28 @@ class StudentSeeder extends Seeder
                 'birth_date' => '2002-09-12',
                 'qrcode' => 'S-00000005',
             ],
+            [
+                'student_id' => '2024-00006',
+                'firstname' => 'Sofia',
+                'lastname' => 'Ramos',
+                'middle_initial' => 'A',
+                'course' => 'GR11',
+                'year' => 'Grade 11',
+                'mobile_number' => '09221234506',
+                'birth_date' => '2008-04-18',
+                'qrcode' => 'S-00000006',
+            ],
+            [
+                'student_id' => '2024-00007',
+                'firstname' => 'Ethan',
+                'lastname' => 'Navarro',
+                'middle_initial' => 'J',
+                'course' => 'GR8',
+                'year' => 'Grade 8',
+                'mobile_number' => '09231234507',
+                'birth_date' => '2011-06-25',
+                'qrcode' => 'S-00000007',
+            ],
         ];
 
         foreach ($students as $row) {

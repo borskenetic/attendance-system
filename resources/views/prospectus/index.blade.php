@@ -30,17 +30,26 @@
         @endif
 
         <div class="bg-white rounded shadow p-4 mb-6">
-            <h2 class="font-semibold mb-3">Add Program/Strand</h2>
+            <h2 class="font-semibold mb-3">Add Program or Grade</h2>
             <form method="POST" action="{{ route('prospectus.storeProgram') }}"
-                class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                class="grid grid-cols-1 md:grid-cols-4 gap-3">
                 @csrf
-                <input type="text" name="program_code" placeholder="Program Code" class="border px-3 py-2" required>
-                <input type="text" name="program_name" placeholder="Program Name" class="border px-3 py-2" required>
+                <select name="school_level" id="school_level" class="border px-3 py-2" required>
+                    @foreach($schoolLevels as $value => $label)
+                        <option value="{{ $value }}" @selected(old('school_level', 'college') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <input type="text" name="program_code" id="program_code" placeholder="Program Code (e.g. BSCS, GR11)" class="border px-3 py-2" value="{{ old('program_code') }}" required>
+                <input type="text" name="program_name" id="program_name" placeholder="Program Name (e.g. BSIT, Grade 11)" class="border px-3 py-2" value="{{ old('program_name') }}" required>
                 <button type="submit" class="btn btn-primary bg-blue-600 text-white px-4 py-2 rounded">Add Program</button>
             </form>
         </div>
 
-        @foreach($programs as $program)
+        @php use App\Support\SchoolLevel; @endphp
+        @foreach(SchoolLevel::ordered() as $level)
+            @if(($programsByLevel[$level] ?? collect())->isNotEmpty())
+                <h2 class="text-xl font-semibold mb-3 mt-2">{{ SchoolLevel::label($level) }}</h2>
+                @foreach($programsByLevel[$level] as $program)
         <div class="bg-white rounded shadow mb-6">
             <div class="flex justify-between items-center px-4 py-3 bg-gray-800 text-white rounded-t">
                 <span id="program-name-{{ $program->id }}" class="font-semibold">
@@ -69,7 +78,13 @@
                     @foreach($program->years as $year)
                     <div class="bg-gray-50 rounded shadow">
                         <div class="flex justify-between items-center px-3 py-2 border-b">
-                            <span class="font-semibold">Year {{ $year->year_level }}</span>
+                            <span class="font-semibold">
+                                @if(SchoolLevel::usesIndividualGrades($program->school_level))
+                                    Subjects
+                                @else
+                                    {{ $year->display_label }}
+                                @endif
+                            </span>
                             <button data-bs-toggle="collapse" data-bs-target="#year-{{ $year->id }}"
                                 class="text-sm text-gray-600">
                                 Toggle
@@ -117,6 +132,8 @@
                 </div>
             </div>
         </div>
+                @endforeach
+            @endif
         @endforeach
     </div>
 

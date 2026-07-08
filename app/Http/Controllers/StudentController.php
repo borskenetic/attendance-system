@@ -27,21 +27,24 @@ class StudentController extends Controller
 {
     use RespondsWithHydratablePartial;
 
-    private function programList()
+    private function programsByLevel()
     {
         if (! Schema::hasTable('programs')) {
             return collect();
         }
 
-        return Cache::remember('students.program_list', 600, fn () =>
-            Program::orderBy('program_name')->get()
-        );
+        return Cache::remember('students.programs_by_level.v2', 600, fn () => Program::groupedForSelect());
+    }
+
+    private function programList()
+    {
+        return $this->programsByLevel()->flatten(1);
     }
 
     // Show all students
     public function index(Request $request)
     {
-        $programs = $this->programList();
+        $programsByLevel = $this->programsByLevel();
         $students = $this->filteredStudentsQuery($request)
             ->orderBy('lastname', 'asc')
             ->paginate(15)
@@ -51,7 +54,7 @@ class StudentController extends Controller
             $request,
             'students.students',
             'students.partials.list-table',
-            compact('students', 'programs'),
+            compact('students', 'programsByLevel'),
         );
     }
 
@@ -145,8 +148,8 @@ class StudentController extends Controller
     // Show form to create new student
     public function create()
     {
-        $programs = $this->programList();
-        return view('students.create', compact('programs'));
+        $programsByLevel = $this->programsByLevel();
+        return view('students.create', compact('programsByLevel'));
     }
 
     // Store new student
@@ -226,9 +229,9 @@ class StudentController extends Controller
     public function edit($id)
     {
         $student = Student::findOrFail($id);
-        $programs = $this->programList();
+        $programsByLevel = $this->programsByLevel();
 
-        return view('students.edit', compact('student', 'programs'));
+        return view('students.edit', compact('student', 'programsByLevel'));
     }
 
     // Update student

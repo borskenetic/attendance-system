@@ -27,20 +27,16 @@
                            placeholder="Search name, ID, course…" value="{{ request('search') }}">
                 </div>
                 <div class="col-md-4">
-                    <select name="program_id" class="form-select form-select-sm">
-                        <option value="">All Courses</option>
-                        @foreach ($programs as $program)
-                            <option value="{{ $program->program_code }}"
-                                {{ request('program_id') == $program->program_code ? 'selected' : '' }}>
-                                {{ $program->program_name }}
-                            </option>
-                        @endforeach
-                    </select>
+                    @include('partials.program-course-filter', ['programsByLevel' => $programsByLevel])
                 </div>
                 <div class="col-md-3">
                     <select name="year" class="form-select form-select-sm">
                         <option value="">All Years</option>
-                        @foreach(['1st Year','2nd Year','3rd Year','4th Year','5th Year','6th Year'] as $y)
+                        @foreach(array_merge(
+                            \App\Support\SchoolLevel::yearOptions(\App\Support\SchoolLevel::COLLEGE),
+                            \App\Support\SchoolLevel::yearOptions(\App\Support\SchoolLevel::SENIOR_HIGH),
+                            \App\Support\SchoolLevel::yearOptions(\App\Support\SchoolLevel::JUNIOR_HIGH)
+                        ) as $y)
                             <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>{{ $y }}</option>
                         @endforeach
                     </select>
