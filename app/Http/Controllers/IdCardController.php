@@ -175,6 +175,15 @@ class IdCardController extends Controller
         $course = strtoupper(trim((string) $course));
         $roman = $this->yearLevelToRoman($year);
 
+        // Client request: show Junior High as "GRADE - 7" (not "GR7 - VII").
+        if ($year !== null && preg_match('/\bgrade\s*(\d+)\b/i', $year, $matches)) {
+            $grade = (int) $matches[1];
+
+            if ($grade >= 7 && $grade <= 10) {
+                return 'GRADE - ' . $grade;
+            }
+        }
+
         if ($course !== '' && $roman !== null) {
             return $course.' - '.$roman;
         }
