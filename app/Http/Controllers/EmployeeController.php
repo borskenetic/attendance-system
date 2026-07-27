@@ -7,6 +7,7 @@ use App\Exports\EmployeesListExport;
 use App\Imports\EmployeesImport;
 use App\Services\BulkIdCardService;
 use App\Models\Employee;
+use App\Models\Role;
 use App\Support\RespondsWithHydratablePartial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -17,17 +18,19 @@ class EmployeeController extends Controller
     use RespondsWithHydratablePartial;
 
     /**
-     * Show all faculty (employees with role_id = 2)
+     * Show all faculty employees
      */
     public function index(Request $request)
     {
+        $facultyRoleId = Role::facultyId();
+
         $faculty = $this->filteredEmployeesQuery($request)
             ->orderBy('lastname', 'asc')
             ->paginate(15)
             ->withQueryString();
 
-        $departments = Cache::remember('employees.departments', 600, fn () =>
-            Employee::where('role_id', 2)
+        $departments = Cache::remember('employees.departments.v2', 600, fn () =>
+            Employee::where('role_id', $facultyRoleId)
                 ->whereNotNull('department')
                 ->where('department', '!=', '')
                 ->distinct()
@@ -35,8 +38,8 @@ class EmployeeController extends Controller
                 ->pluck('department')
         );
 
-        $positions = Cache::remember('employees.positions', 600, fn () =>
-            Employee::where('role_id', 2)
+        $positions = Cache::remember('employees.positions.v2', 600, fn () =>
+            Employee::where('role_id', $facultyRoleId)
                 ->whereNotNull('position')
                 ->where('position', '!=', '')
                 ->distinct()
@@ -54,7 +57,7 @@ class EmployeeController extends Controller
 
     private function filteredEmployeesQuery(Request $request)
     {
-        $query = Employee::with('role')->where('role_id', 2);
+        $query = Employee::with('role')->where('role_id', Role::facultyId());
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -174,8 +177,8 @@ class EmployeeController extends Controller
             'formal_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
     
-        // Force Faculty role
-        $validated['role_id'] = 2;
+        // Force Faculty role (looked up by description — do not hardcode id)
+        $validated['role_id'] = Role::facultyId();
     
         // Generate QR automatically (same style as students)
         if (!empty($validated['employee_id'])) {
@@ -249,8 +252,8 @@ class EmployeeController extends Controller
             'formal_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
     
-        // 🔒 Force role to Faculty
-        $validated['role_id'] = 2;
+        // Force Faculty role (looked up by description — do not hardcode id)
+        $validated['role_id'] = Role::facultyId();
     
         /*
         |--------------------------------------------------------------------------

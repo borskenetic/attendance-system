@@ -51,8 +51,8 @@ class PendingEmployeeController extends Controller
             'employee_signature' => 'nullable|string',
         ]);
     
-        // Set role_id = 2 (Faculty)
-        $validated['role_id'] = 2;
+        // Set faculty role (looked up by description — do not hardcode id)
+        $validated['role_id'] = Role::facultyId();
     
         // Handle profile picture upload
         if ($request->hasFile('formal_picture')) {
@@ -111,8 +111,8 @@ class PendingEmployeeController extends Controller
     
             $newQr = 'E-' . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
     
-            // Role ID for Faculty (you said role_id = 2)
-            $rid = 2;
+            // Faculty role (looked up by description — do not hardcode id)
+            $rid = Role::facultyId();
     
             $payload = TableColumns::filter('employees', [
                 'employee_id' => $pending->employee_id,

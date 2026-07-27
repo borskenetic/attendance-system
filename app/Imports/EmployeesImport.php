@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Employee;
+use App\Models\Role;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -35,7 +36,7 @@ class EmployeesImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithVa
         }
 
         return new Employee([
-            'role_id' => 2,
+            'role_id' => Role::facultyId(),
             'employee_id' => $employeeId,
             'firstname' => $firstname,
             'lastname' => $lastname,
