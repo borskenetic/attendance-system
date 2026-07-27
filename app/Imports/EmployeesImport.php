@@ -39,6 +39,7 @@ class EmployeesImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithVa
             'role_id' => Role::facultyId(),
             'employee_id' => $employeeId,
             'firstname' => $firstname,
+            'middle_name' => trim((string) ($row['middle_name'] ?? '')) ?: null,
             'lastname' => $lastname,
             'department' => trim((string) ($row['department'] ?? '')) ?: null,
             'position' => trim((string) ($row['position'] ?? '')) ?: null,

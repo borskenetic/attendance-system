@@ -16,6 +16,7 @@ class Employee extends Model
         'formal_picture',
         'department',
         'firstname',
+        'middle_name',
         'lastname',
         'position',
         'employee_number',

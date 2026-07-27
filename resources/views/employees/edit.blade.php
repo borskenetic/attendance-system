@@ -50,10 +50,13 @@
                 <h5 class="mb-3">Employee Information</h5>
 
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <input type="text" name="firstname" class="form-control" placeholder="First Name" value="{{ old('firstname', $employee->firstname) }}" required>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <input type="text" name="middle_name" class="form-control" placeholder="Middle Name" value="{{ old('middle_name', $employee->middle_name) }}">
+                    </div>
+                    <div class="col-md-4">
                         <input type="text" name="lastname" class="form-control" placeholder="Last Name" value="{{ old('lastname', $employee->lastname) }}" required>
                     </div>
                     <div class="col-md-6">

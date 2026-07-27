@@ -21,7 +21,7 @@
                                 No Image
                             @endif
                         </td>
-                        <td>{{ $e->firstname }} {{ $e->lastname }}</td>
+                        <td>{{ trim(implode(' ', array_filter([$e->firstname, $e->middle_name, $e->lastname]))) }}</td>
                         <td>{{ $e->department }}</td>
                         <td>{{ $e->position }}</td>
                         <td>

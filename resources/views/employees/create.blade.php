@@ -54,13 +54,19 @@
                             <input type="text" name="employee_number" id="employee_number" class="form-control"
                                    value="{{ old('employee_number') }}" placeholder="Optional">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label for="firstname" class="form-label">First name</label>
                             <input type="text" name="firstname" id="firstname" class="form-control @error('firstname') is-invalid @enderror"
                                    value="{{ old('firstname') }}" required>
                             @error('firstname')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <label for="middle_name" class="form-label">Middle name</label>
+                            <input type="text" name="middle_name" id="middle_name" class="form-control @error('middle_name') is-invalid @enderror"
+                                   value="{{ old('middle_name') }}" placeholder="Optional">
+                            @error('middle_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-4">
                             <label for="lastname" class="form-label">Last name</label>
                             <input type="text" name="lastname" id="lastname" class="form-control @error('lastname') is-invalid @enderror"
                                    value="{{ old('lastname') }}" required>

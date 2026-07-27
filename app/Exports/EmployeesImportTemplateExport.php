@@ -12,6 +12,7 @@ class EmployeesImportTemplateExport implements FromArray, WithHeadings
         return [
             'employee_id',
             'firstname',
+            'middle_name',
             'lastname',
             'department',
             'position',
@@ -26,6 +27,7 @@ class EmployeesImportTemplateExport implements FromArray, WithHeadings
             [
                 'EMP-2024-001',
                 'Maria',
+                'Cruz',
                 'Santos',
                 'Library',
                 'Librarian',

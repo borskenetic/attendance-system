@@ -6,6 +6,7 @@
                     <th scope="col">Profile</th>
                     <th scope="col">Last Name</th>
                     <th scope="col">First Name</th>
+                    <th scope="col">Middle Name</th>
                     <th scope="col">Department</th>
                     <th scope="col">Position</th>
                     <th scope="col">Employee ID</th>
@@ -25,6 +26,7 @@
                         </td>
                         <td>{{ $employee->lastname }}</td>
                         <td>{{ $employee->firstname }}</td>
+                        <td>{{ $employee->middle_name ?: '—' }}</td>
                         <td>{{ $employee->department }}</td>
                         <td>{{ $employee->position }}</td>
                         <td>{{ $employee->employee_id ?? $employee->qrcode }}</td>

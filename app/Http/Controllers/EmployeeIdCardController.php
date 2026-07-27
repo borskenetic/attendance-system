@@ -68,7 +68,11 @@ class EmployeeIdCardController extends Controller
         }
     
         // --- Name (auto-resize if long) ---
-        $fullName = trim("{$employee->firstname} {$employee->lastname}");
+        $fullName = trim(implode(' ', array_filter([
+            $employee->firstname,
+            $employee->middle_name,
+            $employee->lastname,
+        ])));
         $nameLength = strlen($fullName);
     
         $fontSize = 62.5;

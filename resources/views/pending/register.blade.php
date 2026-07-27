@@ -163,13 +163,17 @@
                 <div class="form-section">
                     <div class="form-section-title">Personal information</div>
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label" for="employee_firstname">First name <span class="required">*</span></label>
-                            <input type="text" name="firstname" id="employee_firstname" class="form-control" required>
+                            <input type="text" name="firstname" id="employee_firstname" class="form-control" value="{{ old('firstname') }}" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <label class="form-label" for="employee_middle_name">Middle name</label>
+                            <input type="text" name="middle_name" id="employee_middle_name" class="form-control" value="{{ old('middle_name') }}" placeholder="Optional">
+                        </div>
+                        <div class="col-md-4">
                             <label class="form-label" for="employee_lastname">Last name <span class="required">*</span></label>
-                            <input type="text" name="lastname" id="employee_lastname" class="form-control" required>
+                            <input type="text" name="lastname" id="employee_lastname" class="form-control" value="{{ old('lastname') }}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="employee_birth_date">Birthday <span class="required">*</span></label>

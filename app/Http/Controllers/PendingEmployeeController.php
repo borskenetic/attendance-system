@@ -31,6 +31,7 @@ class PendingEmployeeController extends Controller
         // Validation
         $validated = $request->validate([
             'firstname' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
             'lastname'  => 'required|string|max:255',
             'department' => 'required|string|max:255',
             'position' => 'nullable|string|max:255',
@@ -119,6 +120,7 @@ class PendingEmployeeController extends Controller
                 'formal_picture' => $pending->formal_picture,
                 'department' => $pending->department,
                 'firstname' => $pending->firstname,
+                'middle_name' => $pending->middle_name ?? null,
                 'lastname' => $pending->lastname,
                 'position' => $pending->position,
                 'employee_number' => $pending->employee_number ?? null,

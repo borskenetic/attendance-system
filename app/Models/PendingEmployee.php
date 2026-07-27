@@ -10,6 +10,7 @@ class PendingEmployee extends Model
 
     protected $fillable = [
         'firstname',
+        'middle_name',
         'lastname',
         'department',
         'position',
