@@ -81,7 +81,7 @@ class PendingStudentController extends Controller
             'emergency_number' => 'nullable|string|max:255',
             'emergency_address' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:500',
-            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:4096',
+            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
             'student_signature' => 'nullable|string',
         ]);
 

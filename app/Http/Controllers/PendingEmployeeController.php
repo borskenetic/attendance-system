@@ -48,7 +48,7 @@ class PendingEmployeeController extends Controller
             'emergency_contact_relationship' => 'nullable|string|max:255',
             'emergency_contact_number' => 'nullable|string|max:255',
             'address' => 'nullable|string',
-            'formal_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:4096',
+            'formal_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
             'employee_signature' => 'nullable|string',
         ]);
     

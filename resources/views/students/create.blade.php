@@ -139,7 +139,7 @@
                             <label for="profile_picture" class="form-label">Profile picture</label>
                             <input type="file" name="profile_picture" id="profile_picture" class="form-control @error('profile_picture') is-invalid @enderror"
                                    accept="image/jpeg,image/png,image/jpg">
-                            <p class="photo-hint">1×1 ID photo preferred. JPG or PNG, max 4 MB.</p>
+                            <p class="photo-hint">1×1 ID photo preferred. JPG or PNG, max 50 MB.</p>
                             <div class="mt-2">
                                 <img src="" alt="Profile preview" width="100" class="rounded border d-none" id="profilePreview">
                             </div>

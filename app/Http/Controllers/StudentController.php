@@ -164,7 +164,7 @@ class StudentController extends Controller
             'birth_date' => 'nullable|date',
             'course' => 'required|string|max:255',
             'year' => 'required|string|max:255',
-            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:4096',
+            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
             'student_signature' => 'nullable|string', // base64
             'mobile_number' => 'nullable|string|max:20',
             'address' => 'nullable|string',
@@ -255,7 +255,7 @@ class StudentController extends Controller
             'emergency_number' => 'nullable|string|max:20',
             'emergency_address' => 'nullable|string',
     
-            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:51200',
             'student_signature' => 'nullable|string',
         ]);
     
@@ -486,7 +486,7 @@ class StudentController extends Controller
             'emergency_number' => 'nullable|string|max:20',
             'emergency_address' => 'nullable|string',
 
-            'profile_picture' => 'nullable|image|max:2048'
+            'profile_picture' => 'nullable|image|max:51200'
         ]);
 
         $photoPath = null;

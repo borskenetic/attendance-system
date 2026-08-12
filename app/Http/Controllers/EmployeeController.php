@@ -175,7 +175,7 @@ class EmployeeController extends Controller
             'address' => 'nullable|string',
             'emergency_contact_number' => 'nullable|string|max:255',
             'employee_signature' => 'nullable|string',
-            'formal_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'formal_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
         ]);
     
         // Force Faculty role (looked up by description — do not hardcode id)
@@ -251,7 +251,7 @@ class EmployeeController extends Controller
             'address' => 'nullable|string',
             'emergency_contact_number' => 'nullable|string|max:255',
             'employee_signature' => 'nullable|string',
-            'formal_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'formal_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
         ]);
     
         // Force Faculty role (looked up by description — do not hardcode id)

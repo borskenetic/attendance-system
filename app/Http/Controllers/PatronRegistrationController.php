@@ -27,7 +27,7 @@ class PatronRegistrationController extends Controller
             'password' => 'required|string|min:6|confirmed',
             'course' => 'required|string',
             'year' => 'required|string',
-            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:51200',
         ]);
 
         // Save profile picture if provided
