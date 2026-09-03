@@ -3,8 +3,9 @@
 @section('title', 'Employees')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/students/students.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/layout/skeleton.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/layout/data-pages.css') }}?v={{ @filemtime(public_path('css/layout/data-pages.css')) ?: time() }}">
+    <link rel="stylesheet" href="{{ asset('css/students/students.css') }}?v={{ @filemtime(public_path('css/students/students.css')) ?: time() }}">
+    <link rel="stylesheet" href="{{ asset('css/layout/skeleton.css') }}?v={{ @filemtime(public_path('css/layout/skeleton.css')) ?: time() }}">
 @endpush
 
 @section('content')
