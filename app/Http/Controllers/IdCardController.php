@@ -585,39 +585,97 @@ class IdCardController extends Controller
     }
 
     /**
-     * Fast corner check: black studio cutouts always have near-black corners.
-     * Used to hard-skip rembg (which punches holes in maroon uniforms).
+     * Sample border luminance stats to classify studio backdrops.
+     * Returns ['median'=>int, 'blackShare'=>float, 'whiteShare'=>float, 'transparentShare'=>float]
      */
-    private function hasBlackStudioCorners($image): bool
+    private function borderBackdropStats($image): array
     {
         $gd = imagecreatefromstring((string) $image->encode('png'));
         imagepalettetotruecolor($gd);
         $width = imagesx($gd);
         $height = imagesy($gd);
-        $black = 0;
-        $total = 0;
 
+        $luminances = [];
+        $black = 0;
+        $white = 0;
+        $transparent = 0;
+        $total = 0;
+        $step = max(1, (int) floor(min($width, $height) / 100));
+
+        $sample = function (int $x, int $y) use ($gd, &$luminances, &$black, &$white, &$transparent, &$total): void {
+            $rgba = imagecolorat($gd, $x, $y);
+            $r = ($rgba >> 16) & 0xFF;
+            $g = ($rgba >> 8) & 0xFF;
+            $b = $rgba & 0xFF;
+            $alpha = ($rgba & 0x7F000000) >> 24;
+            $total++;
+
+            if ($alpha >= 120) {
+                $transparent++;
+                $luminances[] = 0;
+
+                return;
+            }
+
+            $lum = (int) round(0.2126 * $r + 0.7152 * $g + 0.0722 * $b);
+            $luminances[] = $lum;
+            $max = max($r, $g, $b);
+            $min = min($r, $g, $b);
+
+            // Looser than before: JPEG "black" is often 0-70 gray.
+            if ($lum <= 70 && ($max - $min) <= 40) {
+                $black++;
+            } elseif ($lum >= 200 && ($max - $min) <= 45) {
+                $white++;
+            }
+        };
+
+        for ($x = 0; $x < $width; $x += $step) {
+            $sample($x, 0);
+            $sample($x, min(3, $height - 1));
+            $sample($x, $height - 1);
+            $sample($x, max(0, $height - 4));
+        }
+        for ($y = 0; $y < $height; $y += $step) {
+            $sample(0, $y);
+            $sample(min(3, $width - 1), $y);
+            $sample($width - 1, $y);
+            $sample(max(0, $width - 4), $y);
+        }
+
+        // Extra weight on corners.
         foreach ([[0, 0], [$width - 1, 0], [0, $height - 1], [$width - 1, $height - 1]] as [$cx, $cy]) {
-            for ($dx = 0; $dx <= min(8, $width - 1); $dx += 2) {
-                for ($dy = 0; $dy <= min(8, $height - 1); $dy += 2) {
+            for ($dx = 0; $dx <= min(15, $width - 1); $dx += 2) {
+                for ($dy = 0; $dy <= min(15, $height - 1); $dy += 2) {
                     $x = ($cx === 0) ? $dx : $width - 1 - $dx;
                     $y = ($cy === 0) ? $dy : $height - 1 - $dy;
-                    $rgba = imagecolorat($gd, $x, $y);
-                    $r = ($rgba >> 16) & 0xFF;
-                    $g = ($rgba >> 8) & 0xFF;
-                    $b = $rgba & 0xFF;
-                    $max = max($r, $g, $b);
-                    $total++;
-                    if ($max <= 45 && ($max - min($r, $g, $b)) <= 25) {
-                        $black++;
-                    }
+                    $sample($x, $y);
                 }
             }
         }
 
         imagedestroy($gd);
 
-        return $total > 0 && ($black / $total) >= 0.85;
+        sort($luminances);
+        $count = count($luminances);
+        $median = $count > 0 ? $luminances[(int) floor(($count - 1) / 2)] : 128;
+
+        return [
+            'median' => $median,
+            'blackShare' => $total > 0 ? $black / $total : 0,
+            'whiteShare' => $total > 0 ? $white / $total : 0,
+            'transparentShare' => $total > 0 ? $transparent / $total : 0,
+            'total' => $total,
+        ];
+    }
+
+    private function hasBlackStudioCorners($image): bool
+    {
+        $stats = $this->borderBackdropStats($image);
+
+        return $stats['blackShare'] >= 0.55
+            || $stats['transparentShare'] >= 0.55
+            || ($stats['median'] <= 55 && $stats['whiteShare'] < 0.2);
     }
 
     /**
@@ -626,7 +684,7 @@ class IdCardController extends Controller
      */
     private function removeStudioBackdrop($image, array $targetRgb)
     {
-        $tolerance = $this->isDarkRgb($targetRgb) ? 38 : 85;
+        $tolerance = $this->isDarkRgb($targetRgb) ? 55 : 85;
 
         return $this->removeRgbBackground($image, $targetRgb, false, $tolerance);
     }
@@ -636,24 +694,37 @@ class IdCardController extends Controller
         $profile = Image::make($profilePath);
         $profile->orientate();
 
-        $bgMode = 'unknown';
+        $stats = $this->borderBackdropStats($profile);
         $solidBackground = $this->detectSolidBackgroundColor($profile);
-        $blackCorners = $this->hasBlackStudioCorners($profile);
+        $darkStudio = $this->hasBlackStudioCorners($profile)
+            || ($stats['blackShare'] + $stats['transparentShare']) >= 0.50
+            || $stats['median'] <= 60;
 
-        // Black studio cutouts must NEVER go through rembg — it eats maroon vests.
-        if ($solidBackground !== null || $blackCorners) {
-            $target = $solidBackground ?? ['r' => 0, 'g' => 0, 'b' => 0];
-            if ($blackCorners && ($solidBackground === null || $this->isDarkRgb($solidBackground))) {
-                $target = ['r' => 0, 'g' => 0, 'b' => 0];
-            }
+        $lightStudio = ($solidBackground !== null && ! $this->isDarkRgb($solidBackground))
+            || ($stats['whiteShare'] >= 0.55 && $stats['median'] >= 190);
 
+        // Already cut out (transparent borders): keep pixels, just repair holes.
+        if ($stats['transparentShare'] >= 0.45) {
             $profile->resize(1400, 1400, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
             });
-
-            $profile = $this->removeStudioBackdrop($profile, $target);
-            $bgMode = $this->isDarkRgb($target) ? 'solid-black' : 'solid-white';
+            $bgMode = 'pre-cutout';
+        } elseif ($darkStudio) {
+            // Black studio cutouts must NEVER go through rembg or white fallback.
+            $profile->resize(1400, 1400, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+            $profile = $this->removeStudioBackdrop($profile, ['r' => 0, 'g' => 0, 'b' => 0]);
+            $bgMode = 'solid-black';
+        } elseif ($lightStudio) {
+            $profile->resize(1400, 1400, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+            $profile = $this->removeStudioBackdrop($profile, ['r' => 255, 'g' => 255, 'b' => 255]);
+            $bgMode = 'solid-white';
         } else {
             $fromService = $this->removeBackgroundWithService($profilePath);
 
@@ -669,8 +740,14 @@ class IdCardController extends Controller
             });
 
             if (! $fromService) {
-                $profile = $this->removeRgbBackground($profile, ['r' => 255, 'g' => 255, 'b' => 255], false, 85);
-                $bgMode = 'white-fallback';
+                // Prefer black removal when border is darker than mid-gray; white otherwise.
+                if ($stats['median'] <= 140) {
+                    $profile = $this->removeStudioBackdrop($profile, ['r' => 0, 'g' => 0, 'b' => 0]);
+                    $bgMode = 'solid-black-fallback';
+                } else {
+                    $profile = $this->removeRgbBackground($profile, ['r' => 255, 'g' => 255, 'b' => 255], false, 85);
+                    $bgMode = 'white-fallback';
+                }
             }
         }
 
@@ -683,7 +760,7 @@ class IdCardController extends Controller
         $flat = Image::canvas($profile->width(), $profile->height());
         $flat->insert($profile, 'top-left', 0, 0);
 
-        return [$flat, $bgMode];
+        return [$flat, $bgMode.';m='.$stats['median'].';b='.round($stats['blackShare'], 2)];
     }
 
     private function idCardPngResponse($img, string $bgMode = 'n/a')
