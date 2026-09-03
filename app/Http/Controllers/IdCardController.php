@@ -212,6 +212,17 @@ class IdCardController extends Controller
             return false;
         }
 
+        $max = max($r, $g, $b);
+        $min = min($r, $g, $b);
+        $chroma = $max - $min;
+
+        // Black studio backdrops: match only neutral near-black.
+        // Euclidean distance to (0,0,0) wrongly treats dark maroon uniforms as background
+        // and flood-fills holes through the vest.
+        if ($this->isDarkRgb($targetRgb)) {
+            return $max <= $tolerance && $chroma <= 18;
+        }
+
         $rgbDistance = sqrt(
             (($r - $targetRgb['r']) ** 2)
             + (($g - $targetRgb['g']) ** 2)
@@ -222,20 +233,7 @@ class IdCardController extends Controller
             return true;
         }
 
-        $max = max($r, $g, $b);
-        $min = min($r, $g, $b);
-
-        // Only expand white/black matching when that is the intended target color.
-        // Avoid treating maroon uniforms / dark hair as "background" during black removal.
-        if (! $this->isDarkRgb($targetRgb)) {
-            $isWhiteLike = $r >= 190 && $g >= 190 && $b >= 190 && ($max - $min) <= 70;
-
-            return $isWhiteLike;
-        }
-
-        $isBlackLike = $max <= 35 && ($max - $min) <= 20;
-
-        return $isBlackLike;
+        return $r >= 190 && $g >= 190 && $b >= 190 && $chroma <= 70;
     }
 
     /**
@@ -319,16 +317,143 @@ class IdCardController extends Controller
 
         $otherShare = $otherVotes / $total;
 
-        // Patterned/campus photos keep a high "other" share and still use rembg.
-        if ($blackVotes > $whiteVotes && ($blackVotes / $total) >= 0.70 && $otherShare <= 0.25) {
+        // Prefer solid removal whenever the border is mostly studio black/white.
+        // rembg punches holes in maroon uniforms on black backdrops.
+        if ($blackVotes > $whiteVotes && ($blackVotes / $total) >= 0.55 && $otherShare <= 0.35) {
             return ['r' => 0, 'g' => 0, 'b' => 0];
         }
 
-        if ($whiteVotes > $blackVotes && ($whiteVotes / $total) >= 0.70 && $otherShare <= 0.25) {
+        if ($whiteVotes > $blackVotes && ($whiteVotes / $total) >= 0.55 && $otherShare <= 0.35) {
             return ['r' => 255, 'g' => 255, 'b' => 255];
         }
 
         return null;
+    }
+
+    /**
+     * rembg often leaves dark clothing semi-transparent; force those pixels opaque
+     * so the campus backdrop cannot show through the uniform.
+     */
+    private function forceSubjectOpaque($image)
+    {
+        $gd = imagecreatefromstring((string) $image->encode('png'));
+        imagepalettetotruecolor($gd);
+        imagealphablending($gd, false);
+        imagesavealpha($gd, true);
+
+        $width = imagesx($gd);
+        $height = imagesy($gd);
+
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                $rgba = imagecolorat($gd, $x, $y);
+                $r = ($rgba >> 16) & 0xFF;
+                $g = ($rgba >> 8) & 0xFF;
+                $b = $rgba & 0xFF;
+                $alpha = ($rgba & 0x7F000000) >> 24;
+
+                // Skip fully transparent and already fully opaque pixels.
+                if ($alpha === 0 || $alpha >= 120) {
+                    continue;
+                }
+
+                // Keep soft fringe (very light / near-transparent edge) as-is.
+                if ($alpha > 90 && $r >= 180 && $g >= 180 && $b >= 180) {
+                    continue;
+                }
+
+                imagesetpixel($gd, $x, $y, imagecolorallocatealpha($gd, $r, $g, $b, 0));
+            }
+        }
+
+        return Image::make($gd);
+    }
+
+    /**
+     * Close transparent pockets trapped inside the subject (not connected to the border).
+     * Uses nearest opaque neighbor color so maroon vest gaps don't show the campus through.
+     */
+    private function fillInteriorTransparentHoles($image)
+    {
+        $gd = imagecreatefromstring((string) $image->encode('png'));
+        imagepalettetotruecolor($gd);
+        imagealphablending($gd, false);
+        imagesavealpha($gd, true);
+
+        $width = imagesx($gd);
+        $height = imagesy($gd);
+        $visited = array_fill(0, $width * $height, false);
+        $borderReachable = array_fill(0, $width * $height, false);
+        $queue = new \SplQueue();
+
+        $isTransparent = static function (int $rgba): bool {
+            return (($rgba & 0x7F000000) >> 24) >= 64;
+        };
+
+        for ($x = 0; $x < $width; $x++) {
+            $queue->enqueue([$x, 0]);
+            $queue->enqueue([$x, $height - 1]);
+        }
+        for ($y = 1; $y < $height - 1; $y++) {
+            $queue->enqueue([0, $y]);
+            $queue->enqueue([$width - 1, $y]);
+        }
+
+        while (! $queue->isEmpty()) {
+            [$x, $y] = $queue->dequeue();
+            if ($x < 0 || $y < 0 || $x >= $width || $y >= $height) {
+                continue;
+            }
+            $index = ($y * $width) + $x;
+            if ($visited[$index]) {
+                continue;
+            }
+            $visited[$index] = true;
+
+            if (! $isTransparent(imagecolorat($gd, $x, $y))) {
+                continue;
+            }
+
+            $borderReachable[$index] = true;
+            $queue->enqueue([$x + 1, $y]);
+            $queue->enqueue([$x - 1, $y]);
+            $queue->enqueue([$x, $y + 1]);
+            $queue->enqueue([$x, $y - 1]);
+        }
+
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                $index = ($y * $width) + $x;
+                if ($borderReachable[$index] || ! $isTransparent(imagecolorat($gd, $x, $y))) {
+                    continue;
+                }
+
+                $fill = null;
+                foreach ([[1, 0], [-1, 0], [0, 1], [0, -1], [2, 0], [-2, 0], [0, 2], [0, -2], [3, 0], [-3, 0], [0, 3], [0, -3]] as [$dx, $dy]) {
+                    $nx = $x + $dx;
+                    $ny = $y + $dy;
+                    if ($nx < 0 || $ny < 0 || $nx >= $width || $ny >= $height) {
+                        continue;
+                    }
+                    $neighbor = imagecolorat($gd, $nx, $ny);
+                    if ((($neighbor & 0x7F000000) >> 24) < 64) {
+                        $fill = $neighbor;
+                        break;
+                    }
+                }
+
+                if ($fill === null) {
+                    continue;
+                }
+
+                $r = ($fill >> 16) & 0xFF;
+                $g = ($fill >> 8) & 0xFF;
+                $b = $fill & 0xFF;
+                imagesetpixel($gd, $x, $y, imagecolorallocatealpha($gd, $r, $g, $b, 0));
+            }
+        }
+
+        return Image::make($gd);
     }
 
     private function removeRgbBackground($image, array $targetRgb = ['r' => 255, 'g' => 255, 'b' => 255], bool $removeAllMatchingPixels = false, int $tolerance = 80)
@@ -481,7 +606,7 @@ class IdCardController extends Controller
                     $constraint->upsize();
                 });
 
-                $tolerance = $this->isDarkRgb($solidBackground) ? 45 : 85;
+                $tolerance = $this->isDarkRgb($solidBackground) ? 38 : 85;
                 $profile = $this->removeRgbBackground($profile, $solidBackground, false, $tolerance);
             } else {
                 $fromService = $this->removeBackgroundWithService($profilePath);
@@ -501,6 +626,9 @@ class IdCardController extends Controller
                 }
             }
 
+            $profile = $this->cropTransparentMargins($profile);
+            $profile = $this->fillInteriorTransparentHoles($profile);
+            $profile = $this->forceSubjectOpaque($profile);
             $profile = $this->cropTransparentMargins($profile);
 
             $photoTop = 180;
