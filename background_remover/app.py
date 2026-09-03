@@ -65,22 +65,22 @@ async def remove_bg_endpoint(photo: UploadFile = File(...)):
 
     input_bytes = await photo.read()
     prepared_bytes = prepare_input_image(input_bytes)
+    # Avoid aggressive alpha matting: it often makes dark uniforms (maroon vests)
+    # semi-transparent, especially on black studio backdrops.
     output_bytes = remove(
         prepared_bytes,
         session=session,
-        alpha_matting=True,
-        alpha_matting_foreground_threshold=240,
-        alpha_matting_background_threshold=10,
+        alpha_matting=False,
     )
     subject = Image.open(io.BytesIO(output_bytes)).convert("RGBA")
 
-    # Remove gray residue left by background removal
+    # Remove light gray fringe residue only — never punch opaque clothing.
     data = np.array(subject)
     r, g, b, a = data[..., 0], data[..., 1], data[..., 2], data[..., 3]
     gray_diff = (np.abs(r.astype(int) - g.astype(int)) +
                  np.abs(g.astype(int) - b.astype(int)) +
                  np.abs(r.astype(int) - b.astype(int)))
-    gray_mask = (gray_diff < 30) & (a < 220)
+    gray_mask = (gray_diff < 30) & (a > 0) & (a < 160) & (r >= 140) & (g >= 140) & (b >= 140)
     data[gray_mask] = [0, 0, 0, 0]
     subject = Image.fromarray(data)
 

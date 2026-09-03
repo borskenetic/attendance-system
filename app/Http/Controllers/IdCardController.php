@@ -195,6 +195,11 @@ class IdCardController extends Controller
         return $roman ?? '';
     }
 
+    private function isDarkRgb(array $rgb): bool
+    {
+        return max($rgb['r'], $rgb['g'], $rgb['b']) <= 40;
+    }
+
     private function isRgbBackgroundColor(int $rgba, array $targetRgb, int $tolerance): bool
     {
         $r = ($rgba >> 16) & 0xFF;
@@ -202,6 +207,7 @@ class IdCardController extends Controller
         $b = $rgba & 0xFF;
         $alpha = ($rgba & 0x7F000000) >> 24;
 
+        // GD alpha: 0 = opaque, 127 = fully transparent. Skip already-transparent pixels.
         if ($alpha >= 120) {
             return false;
         }
@@ -212,11 +218,117 @@ class IdCardController extends Controller
             + (($b - $targetRgb['b']) ** 2)
         );
 
+        if ($rgbDistance <= $tolerance) {
+            return true;
+        }
+
         $max = max($r, $g, $b);
         $min = min($r, $g, $b);
-        $isWhiteLike = $r >= 190 && $g >= 190 && $b >= 190 && ($max - $min) <= 70;
 
-        return $rgbDistance <= $tolerance || $isWhiteLike;
+        // Only expand white/black matching when that is the intended target color.
+        // Avoid treating maroon uniforms / dark hair as "background" during black removal.
+        if (! $this->isDarkRgb($targetRgb)) {
+            $isWhiteLike = $r >= 190 && $g >= 190 && $b >= 190 && ($max - $min) <= 70;
+
+            return $isWhiteLike;
+        }
+
+        $isBlackLike = $max <= 35 && ($max - $min) <= 20;
+
+        return $isBlackLike;
+    }
+
+    /**
+     * Detect a solid studio backdrop (black or white) from border pixels.
+     * Returns null when the backdrop looks complex (use AI remover instead).
+     *
+     * Uniforms often touch left/right edges, so we weight corners + top edge
+     * more heavily and allow a modest share of non-backdrop border pixels.
+     */
+    private function detectSolidBackgroundColor($image): ?array
+    {
+        $gd = imagecreatefromstring((string) $image->encode('png'));
+        imagepalettetotruecolor($gd);
+
+        $width = imagesx($gd);
+        $height = imagesy($gd);
+
+        if ($width < 4 || $height < 4) {
+            imagedestroy($gd);
+
+            return null;
+        }
+
+        $blackVotes = 0;
+        $whiteVotes = 0;
+        $otherVotes = 0;
+        $step = max(1, (int) floor(min($width, $height) / 80));
+
+        $sample = function (int $x, int $y, int $weight = 1) use ($gd, &$blackVotes, &$whiteVotes, &$otherVotes): void {
+            $rgba = imagecolorat($gd, $x, $y);
+            $r = ($rgba >> 16) & 0xFF;
+            $g = ($rgba >> 8) & 0xFF;
+            $b = $rgba & 0xFF;
+            $alpha = ($rgba & 0x7F000000) >> 24;
+
+            if ($alpha >= 120) {
+                return;
+            }
+
+            $max = max($r, $g, $b);
+            $min = min($r, $g, $b);
+
+            if ($max <= 50 && ($max - $min) <= 35) {
+                $blackVotes += $weight;
+            } elseif ($min >= 195 && ($max - $min) <= 45) {
+                $whiteVotes += $weight;
+            } else {
+                $otherVotes += $weight;
+            }
+        };
+
+        // Corners (most reliable for studio cutouts).
+        foreach ([[0, 0], [$width - 1, 0], [0, $height - 1], [$width - 1, $height - 1]] as [$cx, $cy]) {
+            for ($dx = 0; $dx <= min(12, $width - 1); $dx += 2) {
+                for ($dy = 0; $dy <= min(12, $height - 1); $dy += 2) {
+                    $x = ($cx === 0) ? $dx : $width - 1 - $dx;
+                    $y = ($cy === 0) ? $dy : $height - 1 - $dy;
+                    $sample($x, $y, 3);
+                }
+            }
+        }
+
+        // Top edge is usually pure backdrop even when shoulders touch the sides.
+        for ($x = 0; $x < $width; $x += $step) {
+            $sample($x, 0, 2);
+            $sample($x, min(4, $height - 1), 2);
+            $sample($x, $height - 1, 1);
+        }
+
+        for ($y = $step; $y < $height - $step; $y += $step) {
+            $sample(0, $y, 1);
+            $sample($width - 1, $y, 1);
+        }
+
+        imagedestroy($gd);
+
+        $total = $blackVotes + $whiteVotes + $otherVotes;
+        if ($total < 20) {
+            return null;
+        }
+
+        $otherShare = $otherVotes / $total;
+
+        // Patterned/campus photos keep a high "other" share and still use rembg.
+        if ($blackVotes > $whiteVotes && ($blackVotes / $total) >= 0.70 && $otherShare <= 0.25) {
+            return ['r' => 0, 'g' => 0, 'b' => 0];
+        }
+
+        if ($whiteVotes > $blackVotes && ($whiteVotes / $total) >= 0.70 && $otherShare <= 0.25) {
+            return ['r' => 255, 'g' => 255, 'b' => 255];
+        }
+
+        return null;
     }
 
     private function removeRgbBackground($image, array $targetRgb = ['r' => 255, 'g' => 255, 'b' => 255], bool $removeAllMatchingPixels = false, int $tolerance = 80)
@@ -356,22 +468,37 @@ class IdCardController extends Controller
 
         if ($student->profile_picture && file_exists(base_path($student->profile_picture))) {
             $profilePath = base_path($student->profile_picture);
-            $profile = $this->removeBackgroundWithService($profilePath);
-            $usedBackgroundService = $profile !== null;
-
-            if (! $profile) {
-                $profile = Image::make($profilePath);
-            }
-
+            $profile = Image::make($profilePath);
             $profile->orientate();
 
-            $profile->resize(1400, 1400, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
+            // Studio cutouts on solid black/white: flood-fill removal preserves maroon
+            // uniforms. rembg alpha-matting often punches holes through dark clothing.
+            $solidBackground = $this->detectSolidBackgroundColor($profile);
 
-            if (! $usedBackgroundService) {
-                $profile = $this->removeRgbBackground($profile, ['r' => 255, 'g' => 255, 'b' => 255], false, 85);
+            if ($solidBackground !== null) {
+                $profile->resize(1400, 1400, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+
+                $tolerance = $this->isDarkRgb($solidBackground) ? 45 : 85;
+                $profile = $this->removeRgbBackground($profile, $solidBackground, false, $tolerance);
+            } else {
+                $fromService = $this->removeBackgroundWithService($profilePath);
+
+                if ($fromService) {
+                    $profile = $fromService;
+                    $profile->orientate();
+                }
+
+                $profile->resize(1400, 1400, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+
+                if (! $fromService) {
+                    $profile = $this->removeRgbBackground($profile, ['r' => 255, 'g' => 255, 'b' => 255], false, 85);
+                }
             }
 
             $profile = $this->cropTransparentMargins($profile);
