@@ -14,13 +14,13 @@
                 @forelse($students as $student)
                     <tr>
                         <td>
-                            <div class="patron-person">
+                            <div class="d-flex align-items-center gap-2 patron-person">
                                 @if($student->profile_picture)
-                                    <img src="{{ patron_media_url($student->profile_picture) }}" alt="" class="patron-avatar" loading="lazy" width="40" height="40">
+                                    <img src="{{ patron_media_url($student->profile_picture) }}" alt="" class="patron-avatar rounded-0" loading="lazy" width="40" height="40">
                                 @else
-                                    <span class="patron-avatar patron-avatar--empty" aria-hidden="true">{{ strtoupper(substr($student->firstname ?? '?', 0, 1)) }}</span>
+                                    <span class="patron-avatar patron-avatar--empty rounded-0" aria-hidden="true">{{ strtoupper(substr($student->firstname ?? '?', 0, 1)) }}</span>
                                 @endif
-                                <div class="patron-person-text">
+                                <div class="patron-person-text text-start">
                                     <div class="patron-person-name">{{ $student->lastname }}, {{ $student->firstname }}</div>
                                     @if($student->middle_initial)
                                         <div class="patron-person-meta">{{ $student->middle_initial }}</div>

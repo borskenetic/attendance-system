@@ -8,15 +8,15 @@
     'downloadIdsRoute',
 ])
 
-<div class="patron-toolbar">
-    <div class="patron-toolbar-primary">
+<div class="patron-toolbar d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 p-2 border bg-white">
+    <div class="patron-toolbar-primary d-flex flex-wrap align-items-center gap-2">
         @if($registerRoute)
             <a href="{{ $registerRoute }}" class="btn btn-add btn-sm">{{ $registerLabel }}</a>
         @endif
-        <a href="{{ $pendingUrl }}" class="btn btn-sm patron-toolbar-link">Pending</a>
+        <a href="{{ $pendingUrl }}" class="btn btn-sm btn-outline-secondary patron-toolbar-link">Pending</a>
     </div>
 
-    <div class="patron-toolbar-secondary">
+    <div class="patron-toolbar-secondary d-flex flex-wrap align-items-center gap-2">
         @can('isAdmin')
             <div class="dropdown">
                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
