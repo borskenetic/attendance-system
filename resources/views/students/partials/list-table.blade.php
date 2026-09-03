@@ -52,7 +52,7 @@
                                 <div class="dropdown table-action-dropdown">
                                     <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Generate</button>
                                     <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="{{ route('idcard.front', $student->id) }}" target="_blank" data-turbo="false">Front</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('idcard.front', $student->id) }}?t={{ optional($student->updated_at)->timestamp ?? time() }}" target="_blank" data-turbo="false">Front</a></li>
                                         <li><a class="dropdown-item" href="{{ route('idcard.back', $student->id) }}" target="_blank" data-turbo="false">Back</a></li>
                                         <li><a class="dropdown-item" href="{{ route('idcard.download', $student->id) }}" data-turbo="false">Download ZIP</a></li>
                                     </ul>

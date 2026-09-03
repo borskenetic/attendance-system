@@ -584,52 +584,130 @@ class IdCardController extends Controller
         }
     }
 
+    /**
+     * Fast corner check: black studio cutouts always have near-black corners.
+     * Used to hard-skip rembg (which punches holes in maroon uniforms).
+     */
+    private function hasBlackStudioCorners($image): bool
+    {
+        $gd = imagecreatefromstring((string) $image->encode('png'));
+        imagepalettetotruecolor($gd);
+        $width = imagesx($gd);
+        $height = imagesy($gd);
+        $black = 0;
+        $total = 0;
+
+        foreach ([[0, 0], [$width - 1, 0], [0, $height - 1], [$width - 1, $height - 1]] as [$cx, $cy]) {
+            for ($dx = 0; $dx <= min(8, $width - 1); $dx += 2) {
+                for ($dy = 0; $dy <= min(8, $height - 1); $dy += 2) {
+                    $x = ($cx === 0) ? $dx : $width - 1 - $dx;
+                    $y = ($cy === 0) ? $dy : $height - 1 - $dy;
+                    $rgba = imagecolorat($gd, $x, $y);
+                    $r = ($rgba >> 16) & 0xFF;
+                    $g = ($rgba >> 8) & 0xFF;
+                    $b = $rgba & 0xFF;
+                    $max = max($r, $g, $b);
+                    $total++;
+                    if ($max <= 45 && ($max - min($r, $g, $b)) <= 25) {
+                        $black++;
+                    }
+                }
+            }
+        }
+
+        imagedestroy($gd);
+
+        return $total > 0 && ($black / $total) >= 0.85;
+    }
+
+    /**
+     * Remove a solid studio backdrop without rembg.
+     * For black backdrops, keep only neutral near-black (never maroon).
+     */
+    private function removeStudioBackdrop($image, array $targetRgb)
+    {
+        $tolerance = $this->isDarkRgb($targetRgb) ? 38 : 85;
+
+        return $this->removeRgbBackground($image, $targetRgb, false, $tolerance);
+    }
+
+    private function prepareIdCardPhoto(string $profilePath)
+    {
+        $profile = Image::make($profilePath);
+        $profile->orientate();
+
+        $bgMode = 'unknown';
+        $solidBackground = $this->detectSolidBackgroundColor($profile);
+        $blackCorners = $this->hasBlackStudioCorners($profile);
+
+        // Black studio cutouts must NEVER go through rembg — it eats maroon vests.
+        if ($solidBackground !== null || $blackCorners) {
+            $target = $solidBackground ?? ['r' => 0, 'g' => 0, 'b' => 0];
+            if ($blackCorners && ($solidBackground === null || $this->isDarkRgb($solidBackground))) {
+                $target = ['r' => 0, 'g' => 0, 'b' => 0];
+            }
+
+            $profile->resize(1400, 1400, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+
+            $profile = $this->removeStudioBackdrop($profile, $target);
+            $bgMode = $this->isDarkRgb($target) ? 'solid-black' : 'solid-white';
+        } else {
+            $fromService = $this->removeBackgroundWithService($profilePath);
+
+            if ($fromService) {
+                $profile = $fromService;
+                $profile->orientate();
+                $bgMode = 'rembg';
+            }
+
+            $profile->resize(1400, 1400, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+
+            if (! $fromService) {
+                $profile = $this->removeRgbBackground($profile, ['r' => 255, 'g' => 255, 'b' => 255], false, 85);
+                $bgMode = 'white-fallback';
+            }
+        }
+
+        $profile = $this->cropTransparentMargins($profile);
+        $profile = $this->fillInteriorTransparentHoles($profile);
+        $profile = $this->forceSubjectOpaque($profile);
+        $profile = $this->cropTransparentMargins($profile);
+
+        // Flatten onto a true RGBA canvas so later resize/sharpen cannot drop alpha.
+        $flat = Image::canvas($profile->width(), $profile->height());
+        $flat->insert($profile, 'top-left', 0, 0);
+
+        return [$flat, $bgMode];
+    }
+
+    private function idCardPngResponse($img, string $bgMode = 'n/a')
+    {
+        return response((string) $img->encode('png'), 200, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+            'X-BCCI-Photo-Bg' => $bgMode,
+        ]);
+    }
+
     public function front($id)
     {
         $student = Student::findOrFail($id);
 
         $img = Image::make(public_path('images/id_templates/front.png'));
         $templateWidth = $img->width();
+        $bgMode = 'none';
 
         if ($student->profile_picture && file_exists(base_path($student->profile_picture))) {
             $profilePath = base_path($student->profile_picture);
-            $profile = Image::make($profilePath);
-            $profile->orientate();
-
-            // Studio cutouts on solid black/white: flood-fill removal preserves maroon
-            // uniforms. rembg alpha-matting often punches holes through dark clothing.
-            $solidBackground = $this->detectSolidBackgroundColor($profile);
-
-            if ($solidBackground !== null) {
-                $profile->resize(1400, 1400, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                });
-
-                $tolerance = $this->isDarkRgb($solidBackground) ? 38 : 85;
-                $profile = $this->removeRgbBackground($profile, $solidBackground, false, $tolerance);
-            } else {
-                $fromService = $this->removeBackgroundWithService($profilePath);
-
-                if ($fromService) {
-                    $profile = $fromService;
-                    $profile->orientate();
-                }
-
-                $profile->resize(1400, 1400, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                });
-
-                if (! $fromService) {
-                    $profile = $this->removeRgbBackground($profile, ['r' => 255, 'g' => 255, 'b' => 255], false, 85);
-                }
-            }
-
-            $profile = $this->cropTransparentMargins($profile);
-            $profile = $this->fillInteriorTransparentHoles($profile);
-            $profile = $this->forceSubjectOpaque($profile);
-            $profile = $this->cropTransparentMargins($profile);
+            [$profile, $bgMode] = $this->prepareIdCardPhoto($profilePath);
 
             $photoTop = 180;
             $photoBottom = 695;
@@ -686,7 +764,7 @@ class IdCardController extends Controller
             $this->drawText($img, $courseYear, $centerX, 967, 34, '#fff', 'center', 'middle');
         }
 
-        return $img->response('png');
+        return $this->idCardPngResponse($img, $bgMode);
     }
 
     public function back($id)
