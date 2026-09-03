@@ -21,15 +21,16 @@
                 <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
 
-            <form id="students-filter-form" action="{{ route('students.index') }}" method="GET" class="row g-2 mb-3">
-                <div class="col-md-4">
-                    <input type="text" name="search" class="form-control form-control-sm"
-                           placeholder="Search name, ID, course…" value="{{ request('search') }}">
-                </div>
-                <div class="col-md-4">
+            <div class="data-tabs mb-3" role="tablist">
+                <a href="{{ route('students.index') }}" class="data-tab active" aria-current="page">Students</a>
+                <a href="{{ route('employees.index') }}" class="data-tab">Employees</a>
+            </div>
+
+            <form id="students-filter-form" action="{{ route('students.index') }}" method="GET" class="patron-filter-bar mb-3">
+                <input type="text" name="search" class="form-control form-control-sm patron-filter-search"
+                       placeholder="Search name, ID, course…" value="{{ request('search') }}">
+                <div class="patron-filter-selects">
                     @include('partials.program-course-filter', ['programsByLevel' => $programsByLevel])
-                </div>
-                <div class="col-md-3">
                     <select name="year" class="form-select form-select-sm">
                         <option value="">All Years</option>
                         @foreach(array_merge(
@@ -41,15 +42,8 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-primary btn-sm w-100 btn-search-filter">Filter</button>
-                </div>
+                <button type="submit" class="btn btn-primary btn-sm btn-search-filter">Filter</button>
             </form>
-
-            <div class="mb-3 text-center data-tabs">
-                <a href="{{ route('students.index') }}" class="btn btn-outline-primary btn-sm active">Students</a>
-                <a href="{{ route('employees.index') }}" class="btn btn-outline-primary btn-sm">Employees</a>
-            </div>
 
             @include('partials.patron-data-toolbar', [
                 'registerRoute' => auth()->user()?->can('isAdmin') ? route('students.create') : null,
@@ -76,10 +70,10 @@
 
 <template id="students-table-skeleton">
     @include('partials.skeleton-table', [
-        'columns' => 8,
+        'columns' => 5,
         'rows' => 8,
         'loadingLabel' => 'Loading students…',
-        'headers' => ['Profile', 'Student ID', 'Last Name', 'First Name', 'Course', 'Year', 'Actions', 'Generate ID'],
+        'headers' => ['Student', 'Student ID', 'Course', 'Year', 'Actions'],
         'skeletonFirstCol' => 'avatar',
     ])
 </template>

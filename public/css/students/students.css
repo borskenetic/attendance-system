@@ -216,8 +216,10 @@
             color:#22333b;
         }
       
-        .table-responsive {
-          overflow: visible !important;
+        /* Prefer horizontal scroll on list tables; dropdowns still escape via .table-action-dropdown */
+        .data-page .patron-table-scroll {
+          overflow-x: auto !important;
+          overflow-y: visible !important;
         }
         /* Legacy tables outside .data-page only */
         :not(.data-page) .table thead {
