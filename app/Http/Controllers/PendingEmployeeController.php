@@ -50,6 +50,7 @@ class PendingEmployeeController extends Controller
             'address' => 'nullable|string',
             'formal_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
             'employee_signature' => 'nullable|string',
+            'employee_signature_upload' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
         ]);
     
         // Set faculty role (looked up by description — do not hardcode id)
@@ -63,8 +64,18 @@ class PendingEmployeeController extends Controller
             $validated['formal_picture'] = 'images/formal_pictures/' . $filename;
         }
     
-        // Handle signature from base64
-        if (!empty($validated['employee_signature']) && str_starts_with($validated['employee_signature'], 'data:')) {
+        // Handle signature (uploaded file preferred over drawn base64)
+        if ($request->hasFile('employee_signature_upload')) {
+            if (!file_exists(base_path('images/signatures'))) {
+                mkdir(base_path('images/signatures'), 0755, true);
+            }
+
+            $file = $request->file('employee_signature_upload');
+            $ext = strtolower($file->getClientOriginalExtension() ?: 'png');
+            $sigName = time() . '_sig.' . $ext;
+            $file->move(base_path('images/signatures'), $sigName);
+            $validated['employee_signature'] = 'images/signatures/' . $sigName;
+        } elseif (!empty($validated['employee_signature']) && str_starts_with($validated['employee_signature'], 'data:')) {
             $data = $validated['employee_signature'];
             [$meta, $contents] = explode(',', $data, 2);
             $ext = 'png';

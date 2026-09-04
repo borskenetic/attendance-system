@@ -147,11 +147,18 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Signature</label>
-                            <div class="signature-wrap">
+                            <label for="student_signature_upload" class="form-label fw-normal">Upload signature image</label>
+                            <input type="file" name="student_signature_upload" id="student_signature_upload"
+                                   class="form-control @error('student_signature_upload') is-invalid @enderror"
+                                   accept="image/jpeg,image/png,image/jpg">
+                            <p class="photo-hint">JPG or PNG. Or draw your signature below.</p>
+                            @error('student_signature_upload')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            <div class="signature-wrap mt-2">
                                 <canvas id="studentSignaturePad"
                                         data-signature-pad
                                         data-signature-input="studentSignatureInput"
-                                        data-signature-clear="clearStudentSignature"></canvas>
+                                        data-signature-clear="clearStudentSignature"
+                                        data-signature-file="student_signature_upload"></canvas>
                             </div>
                             <input type="hidden" name="student_signature" id="studentSignatureInput" value="{{ old('student_signature') }}">
                             <button type="button" id="clearStudentSignature" class="btn btn-sm btn-outline-secondary mt-2">Clear signature</button>

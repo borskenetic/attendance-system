@@ -175,6 +175,7 @@ class EmployeeController extends Controller
             'address' => 'nullable|string',
             'emergency_contact_number' => 'nullable|string|max:255',
             'employee_signature' => 'nullable|string',
+            'employee_signature_upload' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
             'formal_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
         ]);
     
@@ -199,8 +200,18 @@ class EmployeeController extends Controller
             $validated['formal_picture'] = 'images/formal_pictures/' . $filename;
         }
     
-        // Handle signature (base64)
-        if (!empty($validated['employee_signature']) && str_starts_with($validated['employee_signature'], 'data:')) {
+        // Handle signature (uploaded file preferred over drawn base64)
+        if ($request->hasFile('employee_signature_upload')) {
+            if (!file_exists(base_path('images/signatures'))) {
+                mkdir(base_path('images/signatures'), 0755, true);
+            }
+
+            $file = $request->file('employee_signature_upload');
+            $ext = strtolower($file->getClientOriginalExtension() ?: 'png');
+            $sigName = time() . '_sig.' . $ext;
+            $file->move(base_path('images/signatures'), $sigName);
+            $validated['employee_signature'] = 'images/signatures/' . $sigName;
+        } elseif (!empty($validated['employee_signature']) && str_starts_with($validated['employee_signature'], 'data:')) {
             [$meta, $contents] = explode(',', $validated['employee_signature'], 2);
     
             $ext = 'png';
@@ -251,6 +262,7 @@ class EmployeeController extends Controller
             'address' => 'nullable|string',
             'emergency_contact_number' => 'nullable|string|max:255',
             'employee_signature' => 'nullable|string',
+            'employee_signature_upload' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
             'formal_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
         ]);
     
@@ -291,10 +303,25 @@ class EmployeeController extends Controller
     
         /*
         |--------------------------------------------------------------------------
-        | Handle Signature (Base64)
+        | Handle Signature (Upload or Base64)
         |--------------------------------------------------------------------------
         */
-        if (!empty($validated['employee_signature']) &&
+        if ($request->hasFile('employee_signature_upload')) {
+            if (!empty($employee->employee_signature) &&
+                file_exists(base_path($employee->employee_signature))) {
+                unlink(base_path($employee->employee_signature));
+            }
+
+            if (!file_exists(base_path('images/signatures'))) {
+                mkdir(base_path('images/signatures'), 0755, true);
+            }
+
+            $file = $request->file('employee_signature_upload');
+            $ext = strtolower($file->getClientOriginalExtension() ?: 'png');
+            $sigName = time() . '_sig.' . $ext;
+            $file->move(base_path('images/signatures'), $sigName);
+            $validated['employee_signature'] = 'images/signatures/' . $sigName;
+        } elseif (!empty($validated['employee_signature']) &&
             str_starts_with($validated['employee_signature'], 'data:')) {
     
             // Delete old signature
@@ -322,6 +349,8 @@ class EmployeeController extends Controller
             );
     
             $validated['employee_signature'] = 'images/signatures/' . $sigName;
+        } else {
+            unset($validated['employee_signature']);
         }
     
         /*

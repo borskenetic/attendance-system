@@ -161,14 +161,19 @@
                         <div class="col-12">
                             <label class="form-label">Signature</label>
                             @if($student->student_signature)
-                                <p class="photo-hint mb-2">Current signature (draw below to replace):</p>
+                                <p class="photo-hint mb-2">Current signature (upload or draw below to replace):</p>
                                 <img src="{{ patron_media_url($student->student_signature) }}" alt="Current signature" height="60" class="mb-2 d-block border rounded p-1 bg-white">
                             @endif
-                            <div class="signature-wrap">
+                            <label for="student_signature_upload" class="form-label fw-normal">Upload signature image</label>
+                            <input type="file" name="student_signature_upload" id="student_signature_upload"
+                                   class="form-control" accept="image/jpeg,image/png,image/jpg">
+                            <p class="photo-hint">JPG or PNG. Leave empty to keep the current signature, or draw below.</p>
+                            <div class="signature-wrap mt-2">
                                 <canvas id="studentSignaturePad"
                                         data-signature-pad
                                         data-signature-input="studentSignatureInput"
-                                        data-signature-clear="clearStudentSignature"></canvas>
+                                        data-signature-clear="clearStudentSignature"
+                                        data-signature-file="student_signature_upload"></canvas>
                             </div>
                             <input type="hidden" name="student_signature" id="studentSignatureInput">
                             <button type="button" id="clearStudentSignature" class="btn btn-sm btn-outline-secondary mt-2">Clear new signature</button>

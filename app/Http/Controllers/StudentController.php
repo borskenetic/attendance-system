@@ -166,6 +166,7 @@ class StudentController extends Controller
             'year' => 'required|string|max:255',
             'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
             'student_signature' => 'nullable|string', // base64
+            'student_signature_upload' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
             'mobile_number' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'emergency_person' => 'nullable|string|max:255',
@@ -182,8 +183,18 @@ class StudentController extends Controller
             $validated['profile_picture'] = 'images/profile_pictures/' . $filename;
         }
 
-        // Handle signature (base64)
-        if (!empty($validated['student_signature']) && str_starts_with($validated['student_signature'], 'data:')) {
+        // Handle signature (uploaded file preferred over drawn base64)
+        if ($request->hasFile('student_signature_upload')) {
+            if (!file_exists(base_path('images/student_signatures'))) {
+                mkdir(base_path('images/student_signatures'), 0755, true);
+            }
+
+            $file = $request->file('student_signature_upload');
+            $ext = strtolower($file->getClientOriginalExtension() ?: 'png');
+            $sigName = time() . '_sig.' . $ext;
+            $file->move(base_path('images/student_signatures'), $sigName);
+            $validated['student_signature'] = 'images/student_signatures/' . $sigName;
+        } elseif (!empty($validated['student_signature']) && str_starts_with($validated['student_signature'], 'data:')) {
 
             [$meta, $contents] = explode(',', $validated['student_signature'], 2);
 
@@ -257,6 +268,7 @@ class StudentController extends Controller
     
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:51200',
             'student_signature' => 'nullable|string',
+            'student_signature_upload' => 'nullable|image|mimes:jpeg,png,jpg|max:51200',
         ]);
     
         /*
@@ -279,10 +291,24 @@ class StudentController extends Controller
     
         /*
         |--------------------------------------------------------------------------
-        | SIGNATURE (ONLY IF NEW ONE DRAWN)
+        | SIGNATURE (UPLOAD OR DRAWN; ONLY IF NEW ONE PROVIDED)
         |--------------------------------------------------------------------------
         */
-        if (!empty($validated['student_signature']) && str_starts_with($validated['student_signature'], 'data:')) {
+        if ($request->hasFile('student_signature_upload')) {
+            if ($student->student_signature && file_exists(base_path($student->student_signature))) {
+                unlink(base_path($student->student_signature));
+            }
+
+            if (!file_exists(base_path('images/student_signatures'))) {
+                mkdir(base_path('images/student_signatures'), 0755, true);
+            }
+
+            $file = $request->file('student_signature_upload');
+            $ext = strtolower($file->getClientOriginalExtension() ?: 'png');
+            $sigName = time() . '_sig.' . $ext;
+            $file->move(base_path('images/student_signatures'), $sigName);
+            $validated['student_signature'] = 'images/student_signatures/' . $sigName;
+        } elseif (!empty($validated['student_signature']) && str_starts_with($validated['student_signature'], 'data:')) {
     
             [$meta, $contents] = explode(',', $validated['student_signature'], 2);
     

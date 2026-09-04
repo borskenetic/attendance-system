@@ -36,8 +36,10 @@
     function initCanvas(canvas) {
         const inputId = canvas.dataset.signatureInput;
         const clearId = canvas.dataset.signatureClear;
+        const fileId = canvas.dataset.signatureFile;
         const input = inputId ? document.getElementById(inputId) : null;
         const clearBtn = clearId ? document.getElementById(clearId) : null;
+        const fileInput = fileId ? document.getElementById(fileId) : null;
         const form = canvas.closest('form');
 
         if (!canvas._patronSignaturePad) {
@@ -45,14 +47,42 @@
                 backgroundColor: 'rgb(255, 255, 255)',
             });
 
-            clearBtn?.addEventListener('click', () => {
+            const clearDrawn = () => {
                 canvas._patronSignaturePad.clear();
                 if (input) {
                     input.value = '';
                 }
+            };
+
+            const clearUpload = () => {
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+            };
+
+            clearBtn?.addEventListener('click', () => {
+                clearDrawn();
+                clearUpload();
+            });
+
+            fileInput?.addEventListener('change', () => {
+                if (fileInput.files && fileInput.files.length > 0) {
+                    clearDrawn();
+                }
+            });
+
+            canvas._patronSignaturePad.addEventListener('beginStroke', () => {
+                clearUpload();
             });
 
             form?.addEventListener('submit', () => {
+                if (fileInput?.files?.length) {
+                    if (input) {
+                        input.value = '';
+                    }
+                    return;
+                }
+
                 if (!canvas._patronSignaturePad.isEmpty() && input) {
                     input.value = canvas._patronSignaturePad.toDataURL();
                 }

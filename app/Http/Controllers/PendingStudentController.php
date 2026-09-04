@@ -83,6 +83,7 @@ class PendingStudentController extends Controller
             'address' => 'nullable|string|max:500',
             'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
             'student_signature' => 'nullable|string',
+            'student_signature_upload' => 'nullable|image|mimes:jpg,jpeg,png|max:51200',
         ]);
 
         // Handle profile picture upload
@@ -93,8 +94,18 @@ class PendingStudentController extends Controller
             $validated['profile_picture'] = 'images/profile_pictures/' . $filename;
         }
 
-        // Handle signature (base64)
-        if (!empty($validated['student_signature']) && str_starts_with($validated['student_signature'], 'data:')) {
+        // Handle signature (uploaded file preferred over drawn base64)
+        if ($request->hasFile('student_signature_upload')) {
+            if (!file_exists(base_path('images/student_signatures'))) {
+                mkdir(base_path('images/student_signatures'), 0755, true);
+            }
+
+            $file = $request->file('student_signature_upload');
+            $ext = strtolower($file->getClientOriginalExtension() ?: 'png');
+            $sigName = time() . '_sig.' . $ext;
+            $file->move(base_path('images/student_signatures'), $sigName);
+            $validated['student_signature'] = 'images/student_signatures/' . $sigName;
+        } elseif (!empty($validated['student_signature']) && str_starts_with($validated['student_signature'], 'data:')) {
             [$meta, $contents] = explode(',', $validated['student_signature'], 2);
             $ext = 'png';
             if (preg_match('/data:image\/(jpeg|jpg)/i', $meta)) $ext = 'jpg';

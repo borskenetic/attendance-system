@@ -140,19 +140,21 @@
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label">Signature (draw below)</label><br>
-                        <canvas id="employeeSignaturePad" width="500" height="150"></canvas>
-                        <input type="hidden" name="employee_signature" id="employeeSignatureInput" value="{{ old('employee_signature', $employee->employee_signature) }}">
-                        <div class="mt-2">
-                            <button type="button" id="clearEmployeeSignature" class="btn btn-outline-danger btn-sm">Clear</button>
-                        </div>
-
+                        <label class="form-label">Signature</label>
                         @if($employee->employee_signature)
-                            <div class="mt-3">
-                                <p>Current Signature:</p>
+                            <div class="mb-2">
+                                <p class="mb-1">Current Signature:</p>
                                 <img src="{{ asset($employee->employee_signature) }}" alt="Current Signature" height="80">
                             </div>
                         @endif
+                        <label class="form-label fw-normal" for="employee_signature_upload">Upload signature image</label>
+                        <input type="file" name="employee_signature_upload" id="employee_signature_upload" class="form-control" accept=".jpg,.jpeg,.png">
+                        <p class="text-muted small mt-1">JPG or PNG. Leave empty to keep the current signature, or draw below.</p>
+                        <canvas id="employeeSignaturePad" width="500" height="150" class="mt-2 border"></canvas>
+                        <input type="hidden" name="employee_signature" id="employeeSignatureInput">
+                        <div class="mt-2">
+                            <button type="button" id="clearEmployeeSignature" class="btn btn-outline-danger btn-sm">Clear</button>
+                        </div>
                     </div>
                 </div>
 
@@ -169,13 +171,30 @@
     const canvas = document.getElementById('employeeSignaturePad');
     const signaturePad = new SignaturePad(canvas);
     const input = document.getElementById('employeeSignatureInput');
+    const fileInput = document.getElementById('employee_signature_upload');
 
     document.getElementById('clearEmployeeSignature').addEventListener('click', () => {
         signaturePad.clear();
         input.value = '';
+        if (fileInput) fileInput.value = '';
+    });
+
+    fileInput?.addEventListener('change', () => {
+        if (fileInput.files?.length) {
+            signaturePad.clear();
+            input.value = '';
+        }
+    });
+
+    signaturePad.addEventListener('beginStroke', () => {
+        if (fileInput) fileInput.value = '';
     });
 
     document.getElementById('employeeForm').addEventListener('submit', function () {
+        if (fileInput?.files?.length) {
+            input.value = '';
+            return;
+        }
         if (!signaturePad.isEmpty()) {
             input.value = signaturePad.toDataURL();
         }

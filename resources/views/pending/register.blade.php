@@ -137,11 +137,15 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Signature</label>
+                            <label class="form-label fw-normal" for="student_signature_upload">Upload signature image</label>
+                            <input type="file" name="student_signature_upload" id="student_signature_upload" class="form-control" accept=".jpg,.jpeg,.png">
+                            <p class="signature-hint mt-1 mb-2">JPG or PNG. Or draw your signature below.</p>
                             <div class="signature-wrap">
                                 <canvas id="studentSignaturePad"
                                         data-signature-pad
                                         data-signature-input="studentSignatureInput"
-                                        data-signature-clear="clearStudentSignature"></canvas>
+                                        data-signature-clear="clearStudentSignature"
+                                        data-signature-file="student_signature_upload"></canvas>
                             </div>
                             <input type="hidden" name="student_signature" id="studentSignatureInput">
                             <div class="signature-actions">
@@ -270,11 +274,15 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Signature</label>
+                            <label class="form-label fw-normal" for="employee_signature_upload">Upload signature image</label>
+                            <input type="file" name="employee_signature_upload" id="employee_signature_upload" class="form-control" accept=".jpg,.jpeg,.png">
+                            <p class="signature-hint mt-1 mb-2">JPG or PNG. Or draw your signature below.</p>
                             <div class="signature-wrap">
                                 <canvas id="employeeSignaturePad"
                                         data-signature-pad
                                         data-signature-input="employeeSignatureInput"
-                                        data-signature-clear="clearEmployeeSignature"></canvas>
+                                        data-signature-clear="clearEmployeeSignature"
+                                        data-signature-file="employee_signature_upload"></canvas>
                             </div>
                             <input type="hidden" name="employee_signature" id="employeeSignatureInput">
                             <div class="signature-actions">

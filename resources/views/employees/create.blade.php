@@ -170,7 +170,11 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Signature</label>
-                            <div class="signature-wrap">
+                            <label for="employee_signature_upload" class="form-label fw-normal">Upload signature image</label>
+                            <input type="file" name="employee_signature_upload" id="employee_signature_upload"
+                                   class="form-control" accept="image/jpeg,image/png,image/jpg">
+                            <p class="photo-hint">JPG or PNG. Or draw your signature below.</p>
+                            <div class="signature-wrap mt-2">
                                 <canvas id="employeeSignaturePad"></canvas>
                             </div>
                             <input type="hidden" name="employee_signature" id="employeeSignatureInput">
@@ -194,6 +198,7 @@
 (function () {
     const canvas = document.getElementById('employeeSignaturePad');
     const input = document.getElementById('employeeSignatureInput');
+    const fileInput = document.getElementById('employee_signature_upload');
     if (!canvas || typeof SignaturePad === 'undefined') return;
 
     const signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
@@ -216,9 +221,25 @@
     document.getElementById('clearEmployeeSignature')?.addEventListener('click', () => {
         signaturePad.clear();
         input.value = '';
+        if (fileInput) fileInput.value = '';
+    });
+
+    fileInput?.addEventListener('change', () => {
+        if (fileInput.files?.length) {
+            signaturePad.clear();
+            input.value = '';
+        }
+    });
+
+    signaturePad.addEventListener('beginStroke', () => {
+        if (fileInput) fileInput.value = '';
     });
 
     document.getElementById('employeeForm')?.addEventListener('submit', () => {
+        if (fileInput?.files?.length) {
+            input.value = '';
+            return;
+        }
         if (!signaturePad.isEmpty()) {
             input.value = signaturePad.toDataURL();
         }
