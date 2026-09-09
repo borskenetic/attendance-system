@@ -551,6 +551,76 @@ class IdCardController extends Controller
         return Image::make($gd)->crop($maxX - $minX + 1, $maxY - $minY + 1, $minX, $minY);
     }
 
+    /**
+     * Recolor opaque signature ink to white with a black outline for contrast on dark clothing.
+     */
+    private function styleSignatureWithStroke($image, int $strokeWidth = 3)
+    {
+        $src = imagecreatefromstring((string) $image->encode('png'));
+        imagepalettetotruecolor($src);
+        imagesavealpha($src, true);
+
+        $width = imagesx($src);
+        $height = imagesy($src);
+        $pad = max(1, $strokeWidth);
+        $outW = $width + ($pad * 2);
+        $outH = $height + ($pad * 2);
+
+        $out = imagecreatetruecolor($outW, $outH);
+        imagealphablending($out, false);
+        imagesavealpha($out, true);
+        $transparent = imagecolorallocatealpha($out, 0, 0, 0, 127);
+        imagefilledrectangle($out, 0, 0, $outW, $outH, $transparent);
+
+        $black = imagecolorallocatealpha($out, 0, 0, 0, 0);
+        $white = imagecolorallocatealpha($out, 255, 255, 255, 0);
+
+        $isInk = static function (int $rgba): bool {
+            $alpha = ($rgba & 0x7F000000) >> 24;
+            if ($alpha >= 100) {
+                return false;
+            }
+
+            $r = ($rgba >> 16) & 0xFF;
+            $g = ($rgba >> 8) & 0xFF;
+            $b = $rgba & 0xFF;
+
+            // Treat dark / mid-tone non-transparent pixels as signature ink.
+            return ($r + $g + $b) < 720;
+        };
+
+        // Black stroke: stamp ink pixels outward in a disc of radius $strokeWidth.
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                if (! $isInk(imagecolorat($src, $x, $y))) {
+                    continue;
+                }
+
+                for ($oy = -$strokeWidth; $oy <= $strokeWidth; $oy++) {
+                    for ($ox = -$strokeWidth; $ox <= $strokeWidth; $ox++) {
+                        if (($ox * $ox) + ($oy * $oy) > ($strokeWidth * $strokeWidth)) {
+                            continue;
+                        }
+                        imagesetpixel($out, $x + $pad + $ox, $y + $pad + $oy, $black);
+                    }
+                }
+            }
+        }
+
+        // White fill on top of the stroke.
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                if ($isInk(imagecolorat($src, $x, $y))) {
+                    imagesetpixel($out, $x + $pad, $y + $pad, $white);
+                }
+            }
+        }
+
+        imagedestroy($src);
+
+        return Image::make($out);
+    }
+
     private function removeBackgroundWithService(string $path)
     {
         $url = config('services.background_remover.url', 'http://127.0.0.1:8010/remove-bg');
@@ -814,12 +884,17 @@ class IdCardController extends Controller
             $signatureWidth = (int) ($templateWidth * 0.32);
             $signatureHeight = (int) ($signature->height() * $signatureWidth / $signature->width());
             $signature->resize($signatureWidth, $signatureHeight);
+            // Stroke after resize so outline thickness stays consistent on the ID.
+            $signature = $this->styleSignatureWithStroke($signature, 3);
+            $signatureWidth = $signature->width();
+            $signatureHeight = $signature->height();
 
             $img->insert(
                 $signature,
                 'top-left',
                 (int) (($templateWidth - $signatureWidth) / 2),
-                695 - $signatureHeight - 10
+                // Sit just above the name bar (photo zone ends at 695).
+                700 - $signatureHeight
             );
         }
 
