@@ -580,8 +580,9 @@ class IdCardController extends Controller
 
     /**
      * Recolor opaque signature ink to white with a black outline for contrast on dark clothing.
+     * White core is slightly thickened so thin pen strokes stay readable as white, not black.
      */
-    private function styleSignatureWithStroke($image, int $strokeWidth = 3)
+    private function styleSignatureWithStroke($image, int $strokeWidth = 4, int $fillRadius = 1)
     {
         $src = imagecreatefromstring((string) $image->encode('png'));
         imagepalettetotruecolor($src);
@@ -589,7 +590,7 @@ class IdCardController extends Controller
 
         $width = imagesx($src);
         $height = imagesy($src);
-        $pad = max(1, $strokeWidth);
+        $pad = max($strokeWidth, $fillRadius, 1);
         $outW = $width + ($pad * 2);
         $outH = $height + ($pad * 2);
 
@@ -616,29 +617,31 @@ class IdCardController extends Controller
             return ($r + $g + $b) < 720;
         };
 
-        // Black stroke: stamp ink pixels outward in a disc of radius $strokeWidth.
+        $stamp = static function ($canvas, int $cx, int $cy, int $radius, int $color): void {
+            for ($oy = -$radius; $oy <= $radius; $oy++) {
+                for ($ox = -$radius; $ox <= $radius; $ox++) {
+                    if (($ox * $ox) + ($oy * $oy) > ($radius * $radius)) {
+                        continue;
+                    }
+                    imagesetpixel($canvas, $cx + $ox, $cy + $oy, $color);
+                }
+            }
+        };
+
+        // Black outline first (outer).
         for ($y = 0; $y < $height; $y++) {
             for ($x = 0; $x < $width; $x++) {
-                if (! $isInk(imagecolorat($src, $x, $y))) {
-                    continue;
-                }
-
-                for ($oy = -$strokeWidth; $oy <= $strokeWidth; $oy++) {
-                    for ($ox = -$strokeWidth; $ox <= $strokeWidth; $ox++) {
-                        if (($ox * $ox) + ($oy * $oy) > ($strokeWidth * $strokeWidth)) {
-                            continue;
-                        }
-                        imagesetpixel($out, $x + $pad + $ox, $y + $pad + $oy, $black);
-                    }
+                if ($isInk(imagecolorat($src, $x, $y))) {
+                    $stamp($out, $x + $pad, $y + $pad, $strokeWidth, $black);
                 }
             }
         }
 
-        // White fill on top of the stroke.
+        // Thicker white core on top so the signature reads as white + black stroke.
         for ($y = 0; $y < $height; $y++) {
             for ($x = 0; $x < $width; $x++) {
                 if ($isInk(imagecolorat($src, $x, $y))) {
-                    imagesetpixel($out, $x + $pad, $y + $pad, $white);
+                    $stamp($out, $x + $pad, $y + $pad, $fillRadius, $white);
                 }
             }
         }
@@ -883,10 +886,12 @@ class IdCardController extends Controller
             $profilePath = base_path($student->profile_picture);
             [$profile, $bgMode] = $this->prepareIdCardPhoto($profilePath);
 
-            $photoTop = 225; // Head guide on front template (644x1024)
+            // Head guide ~225; allow a little room above so tall portraits can reach it.
+            $photoTop = 200;
             $photoBottom = 695;
             $photoZoneHeight = $photoBottom - $photoTop;
-            $maxPhotoWidth = (int) ($templateWidth * 0.66);
+            // Prefer filling height so the head sits near the guide (width was capping too early).
+            $maxPhotoWidth = (int) ($templateWidth * 0.82);
 
             $scale = min($maxPhotoWidth / $profile->width(), $photoZoneHeight / $profile->height());
             $photoWidth = (int) ($profile->width() * $scale);
@@ -908,11 +913,11 @@ class IdCardController extends Controller
             $signature = $this->cropTransparentMargins(
                 $this->removeRgbBackground($signature, ['r' => 255, 'g' => 255, 'b' => 255], true, 95)
             );
-            $signatureWidth = (int) ($templateWidth * 0.32);
+            $signatureWidth = (int) ($templateWidth * 0.30);
             $signatureHeight = (int) ($signature->height() * $signatureWidth / $signature->width());
             $signature->resize($signatureWidth, $signatureHeight);
             // Stroke after resize so outline thickness stays consistent on the ID.
-            $signature = $this->styleSignatureWithStroke($signature, 3);
+            $signature = $this->styleSignatureWithStroke($signature, 4, 1);
             $signatureWidth = $signature->width();
             $signatureHeight = $signature->height();
 
@@ -920,8 +925,8 @@ class IdCardController extends Controller
                 $signature,
                 'top-left',
                 (int) (($templateWidth - $signatureWidth) / 2),
-                // Sit just above the name bar (photo zone ends at 695).
-                700 - $signatureHeight
+                // Bottom edge sits on the maroon name bar (~710–720).
+                712 - $signatureHeight
             );
         }
 
