@@ -50,6 +50,33 @@ class IdCardController extends Controller
         }
     }
 
+    /**
+     * Draw centered text, shrinking font size until it fits within maxWidth.
+     */
+    private function drawFittedText($img, string $text, int $x, int $y, int $maxSize, int $maxWidth, string $color = '#000', string $align = 'center', string $valign = 'top', int $minSize = 18): void
+    {
+        $text = trim($text);
+        if ($text === '') {
+            return;
+        }
+
+        $fontPath = public_path('fonts/arialbd.ttf');
+        $size = $maxSize;
+
+        if (file_exists($fontPath)) {
+            while ($size > $minSize) {
+                $box = imagettfbbox($size, 0, $fontPath, $text);
+                $textWidth = abs($box[2] - $box[0]);
+                if ($textWidth <= $maxWidth) {
+                    break;
+                }
+                $size--;
+            }
+        }
+
+        $this->drawText($img, $text, $x, $y, $size, $color, $align, $valign);
+    }
+
     private function wrapTextByWords(string $text, int $maxCharsPerLine): array
     {
         $words = preg_split('/\s+/', trim($text));
@@ -856,7 +883,7 @@ class IdCardController extends Controller
             $profilePath = base_path($student->profile_picture);
             [$profile, $bgMode] = $this->prepareIdCardPhoto($profilePath);
 
-            $photoTop = 180;
+            $photoTop = 225; // Head guide on front template (644x1024)
             $photoBottom = 695;
             $photoZoneHeight = $photoBottom - $photoTop;
             $maxPhotoWidth = (int) ($templateWidth * 0.66);
@@ -899,10 +926,13 @@ class IdCardController extends Controller
         }
 
         $fullName = strtoupper(trim($student->firstname . ' ' . $student->middle_initial . ' ' . $student->lastname));
+        $fullName = preg_replace('/\s+/', ' ', $fullName);
         $courseYear = $this->formatIdCardCourseYear($student->course, $student->year);
         $centerX = (int) ($templateWidth / 2);
+        // Keep long names inside the maroon name bar (side padding ~28px each).
+        $nameMaxWidth = $templateWidth - 56;
 
-        $this->drawText($img, $fullName, $centerX, 731, 36, '#fff', 'center', 'middle');
+        $this->drawFittedText($img, $fullName, $centerX, 731, 36, $nameMaxWidth, '#fff', 'center', 'middle', 18);
 
         $img->rectangle(0, 768, $templateWidth, 824, function ($draw) {
             $draw->background('#ffb50d');
