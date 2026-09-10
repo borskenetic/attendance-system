@@ -47,7 +47,7 @@
                     <div class="nav-dropdown" data-sidebar-section="attendance">
                         <button
                             type="button"
-                            class="nav-dropdown-button sidebar-link {{ $dropActive(['attendance.scan', 'attendance.process', 'attendance.section', 'attendance_logs.index', 'attendance.changeVideo', 'attendance.uploadVideo', 'attendance.feedback.settings*', 'attendance.section.settings*']) }}"
+                            class="nav-dropdown-button sidebar-link {{ $dropActive(['attendance.scan', 'attendance.process', 'attendance.section', 'attendance_logs.index', 'attendance.changeVideo', 'attendance.uploadVideo', 'attendance.feedback.settings*', 'attendance.section.settings*', 'gate_devices.*']) }}"
                             aria-expanded="false"
                             aria-controls="sidebar-attendance-menu"
                             data-tooltip="Attendance"
@@ -64,6 +64,9 @@
                             <a href="{{ route('attendance.changeVideo') }}" class="{{ $linkActive(['attendance.changeVideo', 'attendance.uploadVideo']) }}" @if($linkActive(['attendance.changeVideo', 'attendance.uploadVideo'])) aria-current="page" @endif>Manage Video</a>
                             <a href="{{ route('attendance.section.settings') }}" class="{{ $linkActive(['attendance.section.settings*']) }}" @if($linkActive(['attendance.section.settings*'])) aria-current="page" @endif>Section Picker</a>
                             <a href="{{ route('attendance.feedback.settings') }}" class="{{ $linkActive(['attendance.feedback.settings*']) }}" @if($linkActive(['attendance.feedback.settings*'])) aria-current="page" @endif>Logout Feedback</a>
+                            @can('isAdmin')
+                                <a href="{{ route('gate_devices.index') }}" class="{{ $linkActive(['gate_devices.*']) }}" @if($linkActive(['gate_devices.*'])) aria-current="page" @endif>Gate Devices</a>
+                            @endcan
                         </div>
                     </div>
 

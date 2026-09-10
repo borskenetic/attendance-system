@@ -18,7 +18,7 @@
         @auth
             @can('isAdminOrStaff')
                 <div class="nav-dropdown">
-                    <button type="button" class="nav-dropdown-button {{ $dropActive(['attendance.scan', 'attendance.process', 'attendance.section', 'attendance_logs.index', 'attendance.changeVideo', 'attendance.uploadVideo', 'attendance.feedback.settings*', 'attendance.section.settings*']) }}">
+                    <button type="button" class="nav-dropdown-button {{ $dropActive(['attendance.scan', 'attendance.process', 'attendance.section', 'attendance_logs.index', 'attendance.changeVideo', 'attendance.uploadVideo', 'attendance.feedback.settings*', 'attendance.section.settings*', 'gate_devices.*']) }}">
                         Attendance
                     </button>
                     <div class="nav-dropdown-content">
@@ -27,6 +27,9 @@
                         <a href="{{ route('attendance.changeVideo') }}" class="{{ $linkActive(['attendance.changeVideo', 'attendance.uploadVideo']) }}">Manage Video</a>
                         <a href="{{ route('attendance.section.settings') }}" class="{{ $linkActive(['attendance.section.settings*']) }}">Section Picker</a>
                         <a href="{{ route('attendance.feedback.settings') }}" class="{{ $linkActive(['attendance.feedback.settings*']) }}">Logout Feedback</a>
+                        @can('isAdmin')
+                            <a href="{{ route('gate_devices.index') }}" class="{{ $linkActive(['gate_devices.*']) }}">Gate Devices</a>
+                        @endcan
                     </div>
                 </div>
 

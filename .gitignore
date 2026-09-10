@@ -68,5 +68,8 @@ desktop.ini
 /videos/*.mp4
 /images/id_templates/
 
+# Offline gate kiosk (local install; copy from ops machine)
+/gate-terminal/
+
 # Do not commit migration archives
 /database/migrations/*.zip

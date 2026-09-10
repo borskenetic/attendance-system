@@ -7,6 +7,7 @@
                     <th>First Name</th>
                     <th>Course</th>
                     <th>Section</th>
+                    <th>Kiosk</th>
                     <th>Status</th>
                     <th>Scanned At</th>
                 </tr>
@@ -18,6 +19,7 @@
                         <td>{{ $log->student ? $log->student->firstname : 'Unknown' }}</td>
                         <td>{{ $log->student ? $log->student->course : 'Unknown' }}</td>
                         <td>{{ $log->section ?? '—' }}</td>
+                        <td>{{ $log->kioskLabel() }}</td>
                         <td>
                             @php $status = strtolower($log->status); @endphp
                             @if($status === 'in')
@@ -34,7 +36,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="al-empty">No attendance records found.</td>
+                        <td colspan="7" class="al-empty">No attendance records found.</td>
                     </tr>
                 @endforelse
             </tbody>

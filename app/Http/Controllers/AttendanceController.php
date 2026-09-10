@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Console\Commands\NormalizeStudentNames;
 use App\Models\AttendanceLog;
 use App\Models\Setting;
 use App\Models\Student;
 use App\Services\AttendanceSessionService;
-use Carbon\Carbon;
+use App\Services\StudentScanService;
 use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
@@ -78,11 +77,11 @@ class AttendanceController extends Controller
         );
     }
 
-    public function scan(Request $request)
+    public function scan(Request $request, StudentScanService $scanService)
     {
         $request->validate(['qrcode' => 'required|string']);
 
-        $student = $this->resolveStudent($request->qrcode);
+        $student = $scanService->resolveStudent($request->qrcode);
 
         if (! $student) {
             return response()->json([
@@ -94,10 +93,7 @@ class AttendanceController extends Controller
         app(AttendanceSessionService::class)->closeStaleOpenInForStudent($student);
 
         $sessions = app(AttendanceSessionService::class);
-        $lastLog = AttendanceLog::where('student_id', $student->id)
-            ->orderByDesc('scanned_at')
-            ->orderByDesc('id')
-            ->first();
+        $lastLog = $scanService->lastLogForStudent($student);
 
         $nextStatus = ($lastLog && $sessions->isInStatus($lastLog->status)) ? 'OUT' : 'IN';
 
@@ -135,12 +131,10 @@ class AttendanceController extends Controller
 
         $student = Student::findOrFail($request->student_id);
         $sessions = app(AttendanceSessionService::class);
+        $scanService = app(StudentScanService::class);
         $sessions->closeStaleOpenInForStudent($student);
 
-        $lastLog = AttendanceLog::where('student_id', $student->id)
-            ->orderByDesc('scanned_at')
-            ->orderByDesc('id')
-            ->first();
+        $lastLog = $scanService->lastLogForStudent($student);
 
         $newStatus = ($lastLog && $sessions->isInStatus($lastLog->status)) ? 'OUT' : 'IN';
 
@@ -149,9 +143,10 @@ class AttendanceController extends Controller
             'section' => $section,
             'status' => $newStatus,
             'scanned_at' => now(),
+            'source' => 'web',
         ]);
 
-        $this->sendScanSms($student, $newStatus);
+        $scanService->sendScanSms($student, $newStatus);
 
         return response()->json([
             'status' => $newStatus,
@@ -178,75 +173,4 @@ class AttendanceController extends Controller
         return redirect()->route('attendance.changeVideo')->with('success', 'Video uploaded successfully!');
     }
 
-    private function resolveStudent(string $raw): ?Student
-    {
-        $token = trim(str_replace("\r", '', $raw));
-        $student = Student::where('qrcode', $token)->first();
-
-        $parsed = $this->parseQr($raw);
-
-        if (! $student && $parsed['student_no']) {
-            $student = Student::where('student_id', $parsed['student_no'])->first();
-        }
-
-        if (! $student && $parsed['full_name']) {
-            $qrName = NormalizeStudentNames::normalizeFullName($parsed['full_name']);
-            $student = Student::where('normalized_name', $qrName)->first();
-        }
-
-        return $student;
-    }
-
-    private function parseQr(string $raw): array
-    {
-        $raw = trim(str_replace("\r", '', $raw));
-
-        if (str_contains($raw, "\n")) {
-            $lines = array_values(array_filter(array_map('trim', explode("\n", $raw))));
-
-            return [
-                'student_no' => $lines[0] ?? null,
-                'full_name' => $lines[1] ?? null,
-                'course' => $lines[2] ?? null,
-            ];
-        }
-
-        $parts = array_map('trim', explode(',', $raw));
-
-        if (preg_match('/^\d{2}-\d+$/', $parts[0] ?? '')) {
-            return [
-                'student_no' => $parts[0] ?? null,
-                'full_name' => $parts[1] ?? null,
-                'course' => $parts[2] ?? null,
-            ];
-        }
-
-        return [
-            'student_no' => null,
-            'full_name' => $parts[0] ?? null,
-            'course' => $parts[1] ?? null,
-        ];
-    }
-
-    private function sendScanSms(Student $student, string $status): void
-    {
-        if (empty($student->mobile_number)) {
-            return;
-        }
-
-        $template = Setting::where('key', Setting::KEY_SCAN_SMS)->value('value')
-            ?? 'Hello {name}, you scanned {status} at the library at {time}.';
-
-        $message = str_replace(
-            ['{name}', '{status}', '{time}'],
-            [
-                trim($student->firstname.' '.$student->lastname),
-                $status,
-                Carbon::now('Asia/Manila')->format('h:i A'),
-            ],
-            $template
-        );
-
-        app(SmsController::class)->sendDirect($student->mobile_number, $message);
-    }
 }

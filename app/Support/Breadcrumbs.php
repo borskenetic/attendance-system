@@ -48,6 +48,11 @@ class Breadcrumbs
                     'routes' => ['attendance.feedback.settings', 'attendance.feedback.settings.update'],
                     'url' => 'attendance.feedback.settings',
                 ],
+                [
+                    'label' => 'Gate Devices',
+                    'routes' => ['gate_devices.*'],
+                    'url' => 'gate_devices.index',
+                ],
             ],
         ],
         [

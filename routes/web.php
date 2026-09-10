@@ -8,6 +8,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeIdCardController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\GateDeviceController;
 use App\Http\Controllers\IdCardController;
 use App\Http\Controllers\PatronMediaController;
 use App\Http\Controllers\PendingEmployeeController;
@@ -138,4 +139,10 @@ Route::middleware(['auth', 'can:isAdmin'])->group(function () {
     Route::get('/edit-user/{id}', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/update-user/{id}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/delete-user/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    Route::get('/gate-devices', [GateDeviceController::class, 'index'])->name('gate_devices.index');
+    Route::post('/gate-devices', [GateDeviceController::class, 'store'])->name('gate_devices.store');
+    Route::post('/gate-devices/{gateDevice}/reissue', [GateDeviceController::class, 'reissue'])->name('gate_devices.reissue');
+    Route::put('/gate-devices/{gateDevice}', [GateDeviceController::class, 'update'])->name('gate_devices.update');
+    Route::delete('/gate-devices/{gateDevice}', [GateDeviceController::class, 'destroy'])->name('gate_devices.destroy');
 });
