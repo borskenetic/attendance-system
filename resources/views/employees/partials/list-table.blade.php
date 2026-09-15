@@ -39,7 +39,6 @@
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="{{ route('employees.edit', $employee->id) }}">Edit</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="{{ route('employees.idcard.front', $employee->id) }}" target="_blank" data-turbo="false">ID front</a></li>
                                     <li><a class="dropdown-item" href="{{ route('employees.idcard.back', $employee->id) }}" target="_blank" data-turbo="false">ID back</a></li>
                                     <li><a class="dropdown-item" href="{{ route('employees.idcard.download', $employee->id) }}" data-turbo="false">Download ID ZIP</a></li>
                                     <li><hr class="dropdown-divider"></li>

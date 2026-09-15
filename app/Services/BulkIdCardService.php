@@ -61,7 +61,7 @@ class BulkIdCardService
             );
 
             try {
-                $zip->addFromString("{$folder}/front.png", $idCard->front($employee->id)->getContent());
+                // Employee front ID is temporarily disabled
                 $zip->addFromString("{$folder}/back.png", $idCard->back($employee->id)->getContent());
             } catch (\Throwable) {
                 continue;
